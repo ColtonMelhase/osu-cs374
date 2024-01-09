@@ -7,3 +7,7 @@ struct movie {
     double rating;
     struct movie *next;
 };
+
+int main(int argc, char *argv[]) {
+    
+}
