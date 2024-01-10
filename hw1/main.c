@@ -1,12 +1,31 @@
 
-
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 struct movie {
     char *title;
     int year;
-    char *languages[];
+    char languages[5][20];
     double rating;
     struct movie *next;
 };
+
+struct movie *createMovie(char *currLine) {
+    struct movie *currMovie = malloc(sizeof(struct movie));
+
+    char *saveptr;
+
+    // Process title
+    char *token = strtok_r(currLine, ",", &saveptr);
+    currMovie->title = calloc(strlen(token) + 1, sizeof(char));
+    strcpy(currMovie->title, token);
+
+    // Process year
+    token = strtok_r(NULL, ",", &saveptr);
+    currMovie->year = atoi(token);
+
+    return currMovie;
+}
 
 struct movie *processFile(char *filePath) {
 
