@@ -5,7 +5,8 @@
 struct movie {
     char *title;
     int year;
-    char languages[5][20];
+    int langCount = 0;
+    char* languages[5];
     double rating;
     struct movie *next;
 };
@@ -23,6 +24,11 @@ struct movie *createMovie(char *currLine) {
     // Process year
     token = strtok_r(NULL, ",", &saveptr);
     currMovie->year = atoi(token);
+
+    // Process languages
+    token = strtok_r(NULL, ",", &saveptr);
+    
+    printf("%s\n", token);
 
     return currMovie;
 }
