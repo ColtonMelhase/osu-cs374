@@ -97,20 +97,55 @@ void printMovie(struct movie *aMovie) {
 void printMovieList(struct movie *list) {
     while(list != NULL) {
         printMovie(list);
-
-        // save pointer to movie printed to free memory
-        struct movie *delMovie = list;
-        list = list->next;  // set list to the next movie
-
-        // free memory of printed movie
-        free(delMovie->title);
-        for(int i = 0; i < delMovie->langCount; i++) {
-            free(delMovie->languages[i]);
-        }
-        free(delMovie);
+        list = list->next;  // set list to the next movie 
     }
 }
+
+void freeMovie(struct movie *aMovie) {
+    free(aMovie->title);
+    for(int i = 0; i < aMovie->langCount; i++) {
+        free(aMovie->languages[i]);
+    }
+    free(aMovie);
+}
+void freeMovieList(struct movie *list) {
+    while(list != NULL) {
+        struct movie *delMovie = list;
+        list = list->next;
+        freeMovie(delMovie);
+    }
+}
+
+void displayMenu() {
+    printf("\n1. Show movies released in the specified year\n"
+            "2. Show highest rated movie for each year\n"
+            "3. Show the title and year of release of all movies in a specific language\n"
+            "4. Exit from the program\n\n"
+            "Enter a choice from 1 to 4: ");
+}
+
 int main(int argc, char *argv[]) {
     struct movie *list = processFile(argv[1]);
-    printMovieList(list);
+    int choice = -1;
+    while(1) {
+        displayMenu();
+        scanf("%d", &choice);
+
+        switch(choice) {
+            case 1:  printf("you pressed 1\n");
+                break;
+            case 2:  printf("you pressed 2\n");
+                break;
+            case 3:  printf("you pressed 3\n");
+                break;
+            case 4:  printf("you pressed 4\n");
+                exit(0);
+                break;
+            default: printf("You entered an incorrect choice. Try again.");
+                        displayMenu();
+                break;
+        }
+    }   
+    displayMenu();
+    freeMovieList(list);
 }
