@@ -68,9 +68,12 @@ struct movie *processFile(char *filePath) {
     struct movie *head = NULL;
     struct movie *tail = NULL;
 
-    getline(&currLine, &len, movieFile);
+    int count = 0;
+
+    getline(&currLine, &len, movieFile);    // skip first line
     while((nread = getline(&currLine, &len, movieFile)) != -1) {
         struct movie *newNode = createMovie(currLine);
+        count++;
 
         if(head == NULL) {
             head = newNode;
@@ -81,6 +84,8 @@ struct movie *processFile(char *filePath) {
         }
     }
 
+    printf("Processed file %s and parsed data for %d movies\n", filePath, count);
+    
     free(currLine);
     fclose(movieFile);
     return head;
@@ -204,6 +209,7 @@ int main(int argc, char *argv[]) {
     int choice = -1;
     do {
         displayMenu();
+        choice = -1;
         scanf("%d", &choice);
 
         switch(choice) {
@@ -219,11 +225,11 @@ int main(int argc, char *argv[]) {
                     scanf("%s", specificLanguage);
                     displaySpecificLanguage(list, specificLanguage);
                     break;
-            case 4: printf("Quitting program\n");
+            case 4: printf("\nQuitting program\n");
                     freeMovieList(list);
                     exit(0);
                     break;
-            default: printf("\nYou entered an incorrect choice. Try again.");
+            default: printf("\nYou entered an incorrect choice. Try again.\n");
                      break;
         }
     } while (choice != 4);
