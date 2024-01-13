@@ -132,13 +132,17 @@ int main(int argc, char *argv[]) {
         scanf("%d", &choice);
 
         switch(choice) {
-            case 1:  printf("you pressed 1\n");
+            int specificYear = -1;
+            case 1: printf("Enter the year for which you want to see movies: ");
+                    scanf("%d", &specificYear);
+                    displaySpecificYear(list, specificYear); 
                 break;
             case 2:  printf("you pressed 2\n");
                 break;
             case 3:  printf("you pressed 3\n");
                 break;
             case 4:  printf("you pressed 4\n");
+                freeMovieList(list);
                 exit(0);
                 break;
             default: printf("You entered an incorrect choice. Try again.");
