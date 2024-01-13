@@ -143,11 +143,42 @@ void displaySpecificYear(struct movie *list, int year) {
     }
 }
 
+bool isInArray(int arr[], int size, int val) {
+    for(int i = 0; i < size; i++) {
+        if(arr[i] == val) {
+            return true;
+        }
+    }
+    return false;
+}
+
 void displayHighestRatedInYear(struct movie *list) {
-    struct movie *highestRated = list;
-    int currentYear = list->year;
-    while(list != NULL) {
+    struct movie *head = list;
+    struct movie *highestRated = NULL;
+    int yearsProcessed[121] = {};
+
+    while(head != NULL) {
+        while(isInArray(yearsProcessed, 121, head->year)) {
+            head = head->next;
+            if(head == NULL) {
+                return;
+            }
+        }
+        yearsProcessed[head->year % 121] = head->year;
+        highestRated = head;
+        list = head->next;
+        while(list != NULL) {
+            if(highestRated->year == list->year) {
+                if(highestRated->rating < list->rating) {
+                    highestRated = list;
+                }
+            }
+            list = list->next;
+        }
         
+        printf("\t%d %0.1f %s\n", highestRated->year, highestRated->rating, highestRated->title);
+
+        head = head->next;
     }
 }
 
@@ -169,7 +200,7 @@ int main(int argc, char *argv[]) {
                     scanf("%d", &specificYear);
                     displaySpecificYear(list, specificYear); 
                 break;
-            case 2:  printf("you pressed 2\n");
+            case 2:  displayHighestRatedInYear(list);
                 break;
             case 3:  printf("you pressed 3\n");
                 break;
