@@ -139,7 +139,7 @@ void displaySpecificYear(struct movie *list, int year) {
         list = list->next;
     }
     if(noResults) {
-        printf("\tNo data about movies released in the year %d\n", year);
+                printf("\tNo data about movies released in the year %d\n", year);
     }
 }
 
@@ -183,7 +183,19 @@ void displayHighestRatedInYear(struct movie *list) {
 }
 
 void displaySpecificLanguage(struct movie *list, char *language) {
-
+    bool noResults = true;
+    while(list != NULL) {
+        for(int i = 0; i < list->langCount; i++) {
+            if(strcmp(list->languages[i], language) == 0) {
+                printf("\t%d %s\n", list->year, list->title);
+                noResults = false;
+            }
+        }
+        list = list->next;
+    }
+    if(noResults) {
+        printf("No data about movies released in %s\n", language);
+    }
 }
 
 
@@ -196,13 +208,16 @@ int main(int argc, char *argv[]) {
 
         switch(choice) {
             int specificYear = -1;
+            char *specificLanguage = NULL;
             case 1: printf("Enter the year for which you want to see movies: ");
                     scanf("%d", &specificYear);
                     displaySpecificYear(list, specificYear); 
                     break;
             case 2: displayHighestRatedInYear(list);
                     break;
-            case 3: printf("you pressed 3\n");
+            case 3: printf("Enter the language for which you want to see movies: ");
+                    scanf("%s", specificLanguage);
+                    displaySpecificLanguage(list, specificLanguage);
                     break;
             case 4: printf("Quitting program\n");
                     freeMovieList(list);
