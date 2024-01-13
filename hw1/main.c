@@ -139,7 +139,7 @@ void displaySpecificYear(struct movie *list, int year) {
         list = list->next;
     }
     if(noResults) {
-        printf("No data about movies released in the year %d\n", year);
+        printf("\tNo data about movies released in the year %d\n", year);
     }
 }
 
@@ -190,7 +190,7 @@ void displaySpecificLanguage(struct movie *list, char *language) {
 int main(int argc, char *argv[]) {
     struct movie *list = processFile(argv[1]);
     int choice = -1;
-    while(1) {
+    do {
         displayMenu();
         scanf("%d", &choice);
 
@@ -199,18 +199,17 @@ int main(int argc, char *argv[]) {
             case 1: printf("Enter the year for which you want to see movies: ");
                     scanf("%d", &specificYear);
                     displaySpecificYear(list, specificYear); 
-                break;
-            case 2:  displayHighestRatedInYear(list);
-                break;
-            case 3:  printf("you pressed 3\n");
-                break;
-            case 4:  printf("you pressed 4\n");
-                freeMovieList(list);
-                exit(0);
-                break;
-            default: printf("You entered an incorrect choice. Try again.");
-                        displayMenu();
-                break;
+                    break;
+            case 2: displayHighestRatedInYear(list);
+                    break;
+            case 3: printf("you pressed 3\n");
+                    break;
+            case 4: printf("Quitting program\n");
+                    freeMovieList(list);
+                    exit(0);
+                    break;
+            default: printf("\nYou entered an incorrect choice. Try again.");
+                     break;
         }
-    }   
+    } while (choice != 4);
 }
