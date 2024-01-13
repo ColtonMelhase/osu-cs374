@@ -2,6 +2,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <stdbool.h>
+
 struct movie {
     char *title;
     int year;
@@ -86,7 +88,7 @@ struct movie *processFile(char *filePath) {
 
 void printMovie(struct movie *aMovie) {
 
-    printf("%s,%d,[", aMovie->title, aMovie->year);
+    printf("\t%s,%d,[", aMovie->title, aMovie->year);
     for(int i = 0; i < aMovie->langCount; i++) {
         printf("%s;", aMovie->languages[i]);
     }
@@ -124,6 +126,36 @@ void displayMenu() {
             "Enter a choice from 1 to 4: ");
 }
 
+void displaySpecificYear(struct movie *list, int year) {
+    bool noResults = true;
+
+    printf("\n");
+    while(list != NULL) {
+        
+        if(list->year == year) {
+            noResults = false;
+            printf("\t%s\n", list->title);
+        }
+        list = list->next;
+    }
+    if(noResults) {
+        printf("No data about movies released in the year %d\n", year);
+    }
+}
+
+void displayHighestRatedInYear(struct movie *list) {
+    struct movie *highestRated = list;
+    int currentYear = list->year;
+    while(list != NULL) {
+        
+    }
+}
+
+void displaySpecificLanguage(struct movie *list, char *language) {
+
+}
+
+
 int main(int argc, char *argv[]) {
     struct movie *list = processFile(argv[1]);
     int choice = -1;
@@ -150,6 +182,4 @@ int main(int argc, char *argv[]) {
                 break;
         }
     }   
-    displayMenu();
-    freeMovieList(list);
 }
