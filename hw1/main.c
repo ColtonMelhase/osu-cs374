@@ -5,15 +5,27 @@
 #include <stdbool.h>
 
 struct movie {
-    char *title;
-    int year;
-    int langCount;
-    char *languages[5];
-    double rating;
-    struct movie *next;
+    char *title;        // Title
+    int year;           // Year of release
+    int langCount;      // Number of languages
+    char *languages[5]; // Languages
+    double rating;      // Rating
+    struct movie *next; // Points to the next movie struct
 };
 
 struct movie *createMovie(char *currLine) {
+    // // //
+    // Given a string representing each line in the .csv file, delimits them between ',', and processes
+    // the contents by storing them into the newly made movie struct. Then appends the created movie to the
+    // end of the linked list.
+
+    // Parameters:
+    //     currLine: The string of a whole line from the .csv file.
+
+    // Return:
+    //     Pointer to the newly created movie.
+    // // //
+
     struct movie *currMovie = malloc(sizeof(struct movie));
     currMovie->title = NULL;
     currMovie->year = 0;
@@ -58,7 +70,17 @@ struct movie *createMovie(char *currLine) {
 }
 
 struct movie *processFile(char *filePath) {
+    // // //
+    // Give a string representing the file path to the .csv file, for every movie entry in the .csv file,
+    // create a new movie object and initialize it to the value returned by createMovie which processes
+    // the data within each line.
 
+    // Parameters:
+    //     filePath: The string representing the file path to the .csv file.
+
+    // Return:
+    //     Pointer to the head of the linked list of movies.
+    // // //
     FILE *movieFile = fopen(filePath, "r");
 
     char *currLine = NULL;
@@ -91,8 +113,17 @@ struct movie *processFile(char *filePath) {
     return head;
 }
 
-void printMovie(struct movie *aMovie) {
 
+void printMovie(struct movie *aMovie) {
+    // // //
+    // Prints the given movie's complete details
+
+    // Parameters:
+    //     aMovie: Pointer to a movie struct
+
+    // Return:
+    //     None
+    // // //
     printf("\t%s,%d,[", aMovie->title, aMovie->year);
     for(int i = 0; i < aMovie->langCount; i++) {
         printf("%s;", aMovie->languages[i]);
@@ -102,6 +133,15 @@ void printMovie(struct movie *aMovie) {
 }
 
 void printMovieList(struct movie *list) {
+    // // //
+    // Given the head of a movie linked list, iterates down linked list calling printMovie for each node
+
+    // Parameters:
+    //     list: head pointer of a linked list of movies
+
+    // Return:
+    //     None
+    // // //
     while(list != NULL) {
         printMovie(list);
         list = list->next;  // set list to the next movie 
@@ -109,6 +149,15 @@ void printMovieList(struct movie *list) {
 }
 
 void freeMovie(struct movie *aMovie) {
+    // // //
+    // Frees the memory allocated by the given movie.
+
+    // Parameters:
+    //     aMovie: Pointer to a movie struct
+
+    // Return:
+    //     None
+    // // //
     free(aMovie->title);
     for(int i = 0; i < aMovie->langCount; i++) {
         free(aMovie->languages[i]);
@@ -116,6 +165,16 @@ void freeMovie(struct movie *aMovie) {
     free(aMovie);
 }
 void freeMovieList(struct movie *list) {
+    // // //
+    // Given the head of a movie linked list, iterates down linked list freeing all
+    // the memory allocated by each movie by calling freeMovie on each node.
+
+    // Parameters:
+    //     list: head pointer of a linked list of movies
+
+    // Return:
+    //     None
+    // // //
     while(list != NULL) {
         struct movie *delMovie = list;
         list = list->next;
@@ -124,6 +183,16 @@ void freeMovieList(struct movie *list) {
 }
 
 void displayMenu() {
+    // // //
+    // Displays the menu prompt at the beginning of program run and after
+    // each choice.
+
+    // Parameters:
+    //     None
+
+    // Return:
+    //     None
+    // // //
     printf("\n1. Show movies released in the specified year\n"
             "2. Show highest rated movie for each year\n"
             "3. Show the title and year of release of all movies in a specific language\n"
@@ -132,6 +201,17 @@ void displayMenu() {
 }
 
 void displaySpecificYear(struct movie *list, int year) {
+    // // //
+    // Given the head of a movie linked list and the year, loops through
+    // linked list and print each movie that has the matching year of release.
+
+    // Parameters:
+    //     list: head pointer of a linked list of movies
+    //     year: the year of release
+
+    // Return:
+    //     None
+    // // //
     bool noResults = true;
 
     printf("\n");
@@ -149,6 +229,18 @@ void displaySpecificYear(struct movie *list, int year) {
 }
 
 bool isInArray(int arr[], int size, int val) {
+    // // //
+    // Given an array of integers, the size of the array, and the value to look for,
+    // return true if the integer is already in the array, and false if it is not.
+
+    // Parameters:
+    //     arr: The array of numbers
+    //     size: The size of the array
+    //     val: The value to look for
+
+    // Return:
+    //     boolean reporting if val is in arr or not.
+    // // //
     for(int i = 0; i < size; i++) {
         if(arr[i] == val) {
             return true;
@@ -158,6 +250,16 @@ bool isInArray(int arr[], int size, int val) {
 }
 
 void displayHighestRatedInYear(struct movie *list) {
+    // // //
+    // Given the head of the linked list of movies, print out
+    // each movie that is highest rated in that year.
+
+    // Parameters:
+    //     list: head pointer of a linked list of movies
+
+    // Return:
+    //     None
+    // // //
     struct movie *head = list;
     struct movie *highestRated = NULL;
     int yearsProcessed[121] = {};
@@ -188,6 +290,17 @@ void displayHighestRatedInYear(struct movie *list) {
 }
 
 void displaySpecificLanguage(struct movie *list, char *language) {
+    // // //
+    // Given the head of the linked list of movies, print out
+    // each movie that has the given language
+
+    // Parameters:
+    //     list: head pointer of a linked list of movies
+    //     language: the language to print movies about
+
+    // Return:
+    //     None
+    // // //
     bool noResults = true;
     while(list != NULL) {
         for(int i = 0; i < list->langCount; i++) {
