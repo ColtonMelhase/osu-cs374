@@ -26,6 +26,7 @@ struct movie *createMovie(char *currLine) {
     //     Pointer to the newly created movie.
     // // //
 
+    // Allocate memory space and initialize struct to default values.
     struct movie *currMovie = malloc(sizeof(struct movie));
     currMovie->title = NULL;
     currMovie->year = 0;
@@ -214,17 +215,16 @@ void displaySpecificYear(struct movie *list, int year) {
     // // //
     bool noResults = true;
 
-    printf("\n");
     while(list != NULL) {
         
         if(list->year == year) {
             noResults = false;
-            printf("\t%s\n", list->title);
+            printf("%s\n", list->title);
         }
         list = list->next;
     }
     if(noResults) {
-                printf("\tNo data about movies released in the year %d\n", year);
+                printf("No data about movies released in the year %d\n", year);
     }
 }
 
@@ -283,7 +283,7 @@ void displayHighestRatedInYear(struct movie *list) {
             list = list->next;
         }
         
-        printf("\t%d %0.1f %s\n", highestRated->year, highestRated->rating, highestRated->title);
+        printf("%d %0.1f %s\n", highestRated->year, highestRated->rating, highestRated->title);
 
         head = head->next;
     }
@@ -302,10 +302,11 @@ void displaySpecificLanguage(struct movie *list, char *language) {
     //     None
     // // //
     bool noResults = true;
+
     while(list != NULL) {
         for(int i = 0; i < list->langCount; i++) {
             if(strcmp(list->languages[i], language) == 0) {
-                printf("\t%d %s\n", list->year, list->title);
+                printf("%d %s\n", list->year, list->title);
                 noResults = false;
             }
         }
@@ -338,11 +339,11 @@ int main(int argc, char *argv[]) {
                     scanf("%s", specificLanguage);
                     displaySpecificLanguage(list, specificLanguage);
                     break;
-            case 4: printf("\nQuitting program\n");
+            case 4: printf("Quitting program\n");
                     freeMovieList(list);
                     exit(0);
                     break;
-            default: printf("\nYou entered an incorrect choice. Try again.\n");
+            default: printf("You entered an incorrect choice. Try again.\n");
                      break;
         }
     } while (choice != 4);
