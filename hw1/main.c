@@ -1,3 +1,7 @@
+// Colton Melhase
+// CS374 WR2024
+// 1/25/2024
+// Brewster
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -262,19 +266,19 @@ void displayHighestRatedInYear(struct movie *list) {
     // // //
     struct movie *head = list;
     struct movie *highestRated = NULL;
-    int yearsProcessed[121] = {};
+    int yearsProcessed[121] = {};       // Array to store processed years
 
     while(head != NULL) {
-        while(isInArray(yearsProcessed, 121, head->year)) {
-            head = head->next;
+        while(isInArray(yearsProcessed, 121, head->year)) { // If the movie's year is already processed,
+            head = head->next;                              // skip
             if(head == NULL) {
                 return;
             }
         }
-        yearsProcessed[head->year % 121] = head->year;
+        yearsProcessed[head->year % 121] = head->year;      // Store the year into yearsProcessed
         highestRated = head;
         list = head->next;
-        while(list != NULL) {
+        while(list != NULL) {                               // Find the highest rated movie
             if(highestRated->year == list->year) {
                 if(highestRated->rating < list->rating) {
                     highestRated = list;
