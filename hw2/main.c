@@ -240,8 +240,8 @@ int main() {
                             scanf("%s", &specificFile);
                             fileProcessed = processSpecific(specificFile);
                             break;
-                        default:
-                            printf("\n\tThe file null was not found. Try again\n");
+                        default: 
+                            printf("You entered an incorrect choice. Try again.\n");
                             break;
                     }
                 } while (!fileProcessed);
@@ -249,6 +249,9 @@ int main() {
             case 2:
                 printf("\nQuitting...\n");
                 exit(0);
+                break;
+            default: 
+                printf("You entered an incorrect choice. Try again.\n");
                 break;
         }
     } while (choiceMain != 2);
