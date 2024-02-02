@@ -8,16 +8,42 @@
 #include <string.h>
 #include <stdbool.h>
 
-bool processLargest() {
 
+bool processLargest() {
+// // //
+    // Finds the largest .csv file and processes it
+
+    // Parameters:
+    //     None
+
+    // Return:
+    //     None
+    // // //
 }
 
 bool processSmallest() {
+// // //
+    // Finds the smallest .csv file and processes it
 
+    // Parameters:
+    //     None
+
+    // Return:
+    //     None
+    // // //
 }
 
 bool processSpecific() {
-    
+// // //
+    // Checks if the given file exists, and processes it.
+    // Else, write an error message
+
+    // Parameters:
+    //     None
+
+    // Return:
+    //     None
+    // // //
 }
 
 
