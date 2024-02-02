@@ -7,7 +7,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdbool.h>
-
+#include <limits.h>
 #include <dirent.h>
 #include <sys/types.h>
 #include <sys/stat.h>
@@ -17,7 +17,7 @@
 #define SUFFIX ".csv"
 
 bool processLargest() {
-// // //
+    // // //
     // Finds the largest .csv file and processes it
 
     // Parameters:
@@ -59,6 +59,27 @@ bool processSmallest() {
     // Return:
     //     None
     // // //
+
+    DIR* currDir = opendir(".");
+    struct dirent *aFile;
+    struct stat fileStat;
+    int smallest = INT_MAX;
+    char* smallestFile;
+
+    while((aFile = readdir(currDir)) != NULL) {
+        char* extension = strrchr(aFile->d_name, '.'); // gets file extension
+        if(strncmp(PREFIX, aFile->d_name, strlen(PREFIX)) == 0 && !strcmp(SUFFIX, extension)) {
+            stat(aFile->d_name, &fileStat);
+            if(smallest > fileStat.st_size) {
+                smallest = fileStat.st_size;
+                smallestFile = strcpy(smallestFile, "./");
+                smallestFile = strcat(smallestFile, aFile->d_name);
+            }
+        }
+    }
+    printf("%s\n", smallestFile);
+    
+    return true;
 }
 
 bool processSpecific() {
@@ -117,7 +138,7 @@ int main() {
                             break;
                         case 2:
                             printf("\n\tChoice 2\n");
-                            fileProcessed = true;
+                            fileProcessed = processSmallest();
                             break;
                         case 3:
                             printf("\n\tChoice 3\n");
