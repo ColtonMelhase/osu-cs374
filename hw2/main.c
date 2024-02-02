@@ -17,7 +17,7 @@
 #define PREFIX "movies_"
 #define SUFFIX ".csv"
 
-void processFile(char *filePath) {
+int processFile(char *filePath) {
     // // //
     // Give a string representing the file path to the .csv file, for every movie entry in the .csv file,
     // create a new movie object and initialize it to the value returned by createMovie which processes
@@ -29,6 +29,14 @@ void processFile(char *filePath) {
     // Return:
     //     Pointer to the head of the linked list of movies.
     // // //
+
+    int fd;
+    // Ensure file exists, if not, return -5
+    fd = open(filePath, O_RDONLY);
+    if(fd == -1) {
+        return -5;
+    }
+    close(fd);
 
     printf("Now processing the chosen file named %s\n", filePath);
 
@@ -51,8 +59,6 @@ void processFile(char *filePath) {
     char* title = NULL;
     int year = 0;
 
-    int fd;
-
     getline(&currLine, &len, movieFile);    // skip first line
     while((nread = getline(&currLine, &len, movieFile)) != -1) {
 
@@ -74,13 +80,12 @@ void processFile(char *filePath) {
         int howMany = write(fd, title, strlen(title));
 
         close(fd);
+        free(title);
     }
+    
     fclose(movieFile);
 
-    // printf("Processed file %s and parsed data for %d movies\n", filePath, count);
-    
-    // free(currLine);
-    // fclose(movieFile);
+    return 0;
 }
 
 bool processLargest() {
@@ -98,11 +103,11 @@ bool processLargest() {
     struct dirent *aFile;
     struct stat fileStat;
     int largest = -1;
-    char* largestFile;
+    char* largestFile = NULL;
 
     while((aFile = readdir(currDir)) != NULL) {
         char* extension = strrchr(aFile->d_name, '.'); // gets file extension
-        if(strncmp(PREFIX, aFile->d_name, strlen(PREFIX)) == 0 && !strcmp(SUFFIX, extension)) {
+        if(strncmp(PREFIX, aFile->d_name, strlen(PREFIX)) == 0 && strcmp(SUFFIX, extension) == 0 && extension != NULL) {
             stat(aFile->d_name, &fileStat);
             if(largest < fileStat.st_size) {
                 largest = fileStat.st_size;
@@ -113,14 +118,13 @@ bool processLargest() {
                 largestFile = calloc(2 + strlen(aFile->d_name) + 1, sizeof(char));
                 //construct new file path
                 largestFile = strcpy(largestFile, aFile->d_name);
-                // largestFile = strcat(largestFile, aFile->d_name);
             }
         }
     }
-    //printf("%s\n", largestFile);
 
     processFile(largestFile);
-    
+    free(largestFile);
+    closedir(currDir);
     return true;
 }
 
@@ -139,7 +143,7 @@ bool processSmallest() {
     struct dirent *aFile;
     struct stat fileStat;
     int smallest = INT_MAX;
-    char* smallestFile;
+    char* smallestFile = NULL;
 
     while((aFile = readdir(currDir)) != NULL) {
         char* extension = strrchr(aFile->d_name, '.'); // gets file extension
@@ -148,20 +152,26 @@ bool processSmallest() {
             if(smallest > fileStat.st_size) {
                 smallest = fileStat.st_size;
 
-                //construct file path
-                smallestFile = strcpy(smallestFile, "./");
-                smallestFile = strcat(smallestFile, aFile->d_name);
+                // free any memory allocated from the last file path,
+                // and allocate more for the new file path.
+                free(smallestFile);
+                smallestFile = calloc(2 + strlen(aFile->d_name) + 1, sizeof(char));
+                //construct new file path
+                smallestFile = strcpy(smallestFile, aFile->d_name);
             }
         }
     }
-    printf("%s\n", smallestFile);
-    
+
+    processFile(smallestFile);
+    free(smallestFile);
     return true;
 }
 
-bool processSpecific() {
+bool processSpecific(char* specificFile) {
 // // //
     // Checks if the given file exists, and processes it.
+    // processFile() contains the checking if it exists.
+    // processFile() returns -5 if it does not exist and/or can't open.
     // Else, write an error message
 
     // Parameters:
@@ -170,6 +180,12 @@ bool processSpecific() {
     // Return:
     //     None
     // // //
+    int status = processFile(specificFile);
+    if(status == -5) {
+        printf("The file %s was not found. Try again\n", specificFile);
+        return false;
+    }
+    return true;
 }
 
 
@@ -193,6 +209,7 @@ int main() {
     int choiceMain = -1;
     int choiceFile = -1;
     bool fileProcessed = false;
+    char specificFile[256]; // 255 max file path length
     do {
         displayMainMenu();
         // choiceMain = -1;
@@ -206,7 +223,7 @@ int main() {
                     
                     choiceFile = -1;
                     scanf("%d", &choiceFile);
-
+                    
                     switch(choiceFile) {
                         
                         case 1:
@@ -214,12 +231,14 @@ int main() {
                             fileProcessed = processLargest();
                             break;
                         case 2:
-                            printf("\n\tChoice 2\n");
+                            //printf("\n\tChoice 2\n");
                             fileProcessed = processSmallest();
                             break;
                         case 3:
-                            printf("\n\tChoice 3\n");
-                            fileProcessed = true;
+                            //printf("\n\tChoice 3\n");
+                            printf("Enter the complete file name: ");
+                            scanf("%s", &specificFile);
+                            fileProcessed = processSpecific(specificFile);
                             break;
                         default:
                             printf("\n\tThe file null was not found. Try again\n");
