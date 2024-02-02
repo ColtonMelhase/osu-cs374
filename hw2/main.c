@@ -8,6 +8,7 @@
 #include <string.h>
 #include <stdbool.h>
 #include <limits.h>
+#include <fcntl.h>
 #include <dirent.h>
 #include <sys/types.h>
 #include <sys/stat.h>
@@ -15,6 +16,72 @@
 
 #define PREFIX "movies_"
 #define SUFFIX ".csv"
+
+void processFile(char *filePath) {
+    // // //
+    // Give a string representing the file path to the .csv file, for every movie entry in the .csv file,
+    // create a new movie object and initialize it to the value returned by createMovie which processes
+    // the data within each line.
+
+    // Parameters:
+    //     filePath: The string representing the file path to the .csv file.
+
+    // Return:
+    //     Pointer to the head of the linked list of movies.
+    // // //
+
+    printf("Now processing the chosen file named %s\n", filePath);
+
+    // Create directory
+    int randNum = random() % 99999;
+    char dirName[14+sizeof(randNum) + 1];
+    sprintf(dirName, "%s%d", "melhasec.movies.", randNum);
+    mkdir(dirName, 0750);
+
+    printf("Created directory with name %s\n", dirName);
+
+    // Process file and file(s)
+    FILE *movieFile = fopen(filePath, "r");
+
+    char *currLine = NULL;
+    size_t len = 0;
+    ssize_t nread;
+    char *saveptr;
+
+    char* title = NULL;
+    int year = 0;
+
+    int fd;
+
+    getline(&currLine, &len, movieFile);    // skip first line
+    while((nread = getline(&currLine, &len, movieFile)) != -1) {
+
+        // Get title
+        char *token = strtok_r(currLine, ",", &saveptr);
+        title = calloc(strlen(token) + 2, sizeof(char)); // +2 for \n and \0
+        strcpy(title, token);
+        strcat(title, "\n");
+
+        // Get year
+        token = strtok_r(NULL, ",", &saveptr);
+        year = atoi(token);
+
+        char newFile[strlen(dirName) + 1 + sizeof(randNum) + 5];
+        sprintf(newFile, "%s/%d.txt", dirName, year);
+        fd = open(newFile, O_RDWR | O_CREAT | O_APPEND, 0640);
+        // printf("%s\n", newFile);
+
+        int howMany = write(fd, title, strlen(title));
+
+        close(fd);
+    }
+    fclose(movieFile);
+
+    // printf("Processed file %s and parsed data for %d movies\n", filePath, count);
+    
+    // free(currLine);
+    // fclose(movieFile);
+}
 
 bool processLargest() {
     // // //
@@ -39,12 +106,20 @@ bool processLargest() {
             stat(aFile->d_name, &fileStat);
             if(largest < fileStat.st_size) {
                 largest = fileStat.st_size;
-                largestFile = strcpy(largestFile, "./");
-                largestFile = strcat(largestFile, aFile->d_name);
+
+                // free any memory allocated from the last file path,
+                // and allocate more for the new file path.
+                free(largestFile);
+                largestFile = calloc(2 + strlen(aFile->d_name) + 1, sizeof(char));
+                //construct new file path
+                largestFile = strcpy(largestFile, aFile->d_name);
+                // largestFile = strcat(largestFile, aFile->d_name);
             }
         }
     }
-    printf("%s\n", largestFile);
+    //printf("%s\n", largestFile);
+
+    processFile(largestFile);
     
     return true;
 }
@@ -72,6 +147,8 @@ bool processSmallest() {
             stat(aFile->d_name, &fileStat);
             if(smallest > fileStat.st_size) {
                 smallest = fileStat.st_size;
+
+                //construct file path
                 smallestFile = strcpy(smallestFile, "./");
                 smallestFile = strcat(smallestFile, aFile->d_name);
             }
@@ -127,13 +204,13 @@ int main() {
                 do {
                     displayFileMenu();
                     
-                    // choiceFile = -1;
+                    choiceFile = -1;
                     scanf("%d", &choiceFile);
 
                     switch(choiceFile) {
                         
                         case 1:
-                            printf("\n\tChoice 1\n");
+                            //printf("\n\tChoice 1\n");
                             fileProcessed = processLargest();
                             break;
                         case 2:
