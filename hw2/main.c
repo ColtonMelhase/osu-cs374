@@ -8,6 +8,13 @@
 #include <string.h>
 #include <stdbool.h>
 
+#include <dirent.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <unistd.h>
+
+#define PREFIX "movies_"
+#define SUFFIX ".csv"
 
 bool processLargest() {
 // // //
@@ -19,6 +26,27 @@ bool processLargest() {
     // Return:
     //     None
     // // //
+
+    DIR* currDir = opendir(".");
+    struct dirent *aFile;
+    struct stat fileStat;
+    int largest = -1;
+    char* largestFile;
+
+    while((aFile = readdir(currDir)) != NULL) {
+        char* extension = strrchr(aFile->d_name, '.'); // gets file extension
+        if(strncmp(PREFIX, aFile->d_name, strlen(PREFIX)) == 0 && !strcmp(SUFFIX, extension)) {
+            stat(aFile->d_name, &fileStat);
+            if(largest < fileStat.st_size) {
+                largest = fileStat.st_size;
+                largestFile = strcpy(largestFile, "./");
+                largestFile = strcat(largestFile, aFile->d_name);
+            }
+        }
+    }
+    printf("%s\n", largestFile);
+    
+    return true;
 }
 
 bool processSmallest() {
@@ -85,7 +113,7 @@ int main() {
                         
                         case 1:
                             printf("\n\tChoice 1\n");
-                            fileProcessed = true;
+                            fileProcessed = processLargest();
                             break;
                         case 2:
                             printf("\n\tChoice 2\n");
