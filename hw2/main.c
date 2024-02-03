@@ -19,15 +19,16 @@
 
 int processFile(char *filePath) {
     // // //
-    // Give a string representing the file path to the .csv file, for every movie entry in the .csv file,
-    // create a new movie object and initialize it to the value returned by createMovie which processes
-    // the data within each line.
+    // Given a string representing the file path to the .csv file, for every movie entry in the .csv file,
+    // read the title and year published. Then create (or append if already exists) a file year.txt, and append
+    // the title on a new line within the .txt file. txt files are stored in newly created directory with a format
+    // of onid.movies.random.
 
     // Parameters:
     //     filePath: The string representing the file path to the .csv file.
 
     // Return:
-    //     Pointer to the head of the linked list of movies.
+    //     Int representing error code if the file to be read exists. Returns -5 if file can't be opened.
     // // //
 
     int fd;
@@ -71,13 +72,15 @@ int processFile(char *filePath) {
         // Get year
         token = strtok_r(NULL, ",", &saveptr);
         year = atoi(token);
-
+        
+        // construct filePath of file to be created.
+        // And open, creating if it doesn't exist, or appending if exists.
         char newFile[strlen(dirName) + 1 + sizeof(randNum) + 5];
         sprintf(newFile, "%s/%d.txt", dirName, year);
         fd = open(newFile, O_RDWR | O_CREAT | O_APPEND, 0640);
-        // printf("%s\n", newFile);
 
-        int howMany = write(fd, title, strlen(title));
+        // Appends movie title to opened .txt file.
+        int fileWrite = write(fd, title, strlen(title));
 
         close(fd);
         free(title);
@@ -96,9 +99,12 @@ bool processLargest() {
     //     None
 
     // Return:
-    //     None
+    //     boolean representing if the file was successfully processed
     // // //
 
+    int status = 0;
+
+    // open current directory
     DIR* currDir = opendir(".");
     struct dirent *aFile;
     struct stat fileStat;
@@ -107,8 +113,9 @@ bool processLargest() {
 
     while((aFile = readdir(currDir)) != NULL) {
         char* extension = strrchr(aFile->d_name, '.'); // gets file extension
+        // if file matches prefix 'movies_' and suffix '.csv'
         if(strncmp(PREFIX, aFile->d_name, strlen(PREFIX)) == 0 && strcmp(SUFFIX, extension) == 0 && extension != NULL) {
-            stat(aFile->d_name, &fileStat);
+            stat(aFile->d_name, &fileStat); // get meta data
             if(largest < fileStat.st_size) {
                 largest = fileStat.st_size;
 
@@ -123,32 +130,45 @@ bool processLargest() {
     }
 
     processFile(largestFile);
+
+    if(status == -5) { // file failed to open or process
+        printf("The file %s was not found. Try again\n", largestFile);
+        free(largestFile);
+        closedir(currDir);
+        return false;
+    }
     free(largestFile);
     closedir(currDir);
     return true;
 }
 
 bool processSmallest() {
-// // //
+    // // //
     // Finds the smallest .csv file and processes it
 
     // Parameters:
     //     None
 
     // Return:
-    //     None
+    //     boolean representing if the file was successfully processed
     // // //
 
+    int status = 0;
+
+    // open current directory
     DIR* currDir = opendir(".");
     struct dirent *aFile;
     struct stat fileStat;
     int smallest = INT_MAX;
     char* smallestFile = NULL;
 
+    // iterate through directory entries
     while((aFile = readdir(currDir)) != NULL) {
         char* extension = strrchr(aFile->d_name, '.'); // gets file extension
+
+        // if file matches prefix 'movies_' and suffix '.csv'
         if(strncmp(PREFIX, aFile->d_name, strlen(PREFIX)) == 0 && !strcmp(SUFFIX, extension)) {
-            stat(aFile->d_name, &fileStat);
+            stat(aFile->d_name, &fileStat); // get meta data
             if(smallest > fileStat.st_size) {
                 smallest = fileStat.st_size;
 
@@ -163,16 +183,23 @@ bool processSmallest() {
     }
 
     processFile(smallestFile);
+
+    if(status == -5) { // file failed to open or process
+        printf("The file %s was not found. Try again\n", smallestFile);
+        free(smallestFile);
+        closedir(currDir);
+        return false;
+    }
     free(smallestFile);
+    closedir(currDir);
     return true;
 }
 
 bool processSpecific(char* specificFile) {
-// // //
+    // // //
     // Checks if the given file exists, and processes it.
     // processFile() contains the checking if it exists.
     // processFile() returns -5 if it does not exist and/or can't open.
-    // Else, write an error message
 
     // Parameters:
     //     None
@@ -180,7 +207,9 @@ bool processSpecific(char* specificFile) {
     // Return:
     //     None
     // // //
+
     int status = processFile(specificFile);
+
     if(status == -5) {
         printf("The file %s was not found. Try again\n", specificFile);
         return false;
@@ -190,6 +219,15 @@ bool processSpecific(char* specificFile) {
 
 
 void displayMainMenu() {
+    // // //
+    // Displays top level menu choices.
+
+    // Parameters:
+    //     None
+
+    // Return:
+    //     None
+    // // //
     printf("\n1. Select file to process\n"
             "2. Exit the program\n\n"
 
@@ -197,6 +235,15 @@ void displayMainMenu() {
 }
 
 void displayFileMenu() {
+    // // //
+    // Displays Select File level menu choices.
+
+    // Parameters:
+    //     None
+
+    // Return:
+    //     None
+    // // //
     printf("\nWhich file you want to process?\n"
             "Enter 1 to pick the largest file\n"
             "Enter 2 to pick the smallest file\n"
@@ -221,7 +268,7 @@ int main() {
                 do {
                     displayFileMenu();
                     
-                    choiceFile = -1;
+                    //choiceFile = -1;
                     scanf("%d", &choiceFile);
                     
                     switch(choiceFile) {
