@@ -17,6 +17,27 @@
 #define PREFIX "movies_"
 #define SUFFIX ".csv"
 
+bool isInArray(int arr[], int size, int val) {
+    // // //
+    // Given an array of integers, the size of the array, and the value to look for,
+    // return true if the integer is already in the array, and false if it is not.
+
+    // Parameters:
+    //     arr: The array of numbers
+    //     size: The size of the array
+    //     val: The value to look for
+
+    // Return:
+    //     boolean reporting if val is in arr or not.
+    // // //
+    for(int i = 0; i < size; i++) {
+        if(arr[i] == val) {
+            return true;
+        }
+    }
+    return false;
+}
+
 int processFile(char *filePath) {
     // // //
     // Given a string representing the file path to the .csv file, for every movie entry in the .csv file,
@@ -59,19 +80,31 @@ int processFile(char *filePath) {
 
     char* title = NULL;
     int year = 0;
+    int yearsProcessed[121] = {};
 
     getline(&currLine, &len, movieFile);    // skip first line
     while((nread = getline(&currLine, &len, movieFile)) != -1) {
-
         // Get title
         char *token = strtok_r(currLine, ",", &saveptr);
         title = calloc(strlen(token) + 2, sizeof(char)); // +2 for \n and \0
-        strcpy(title, token);
-        strcat(title, "\n");
+        char tempTitle[200];        // Temp title for use to see if a newline needs to be injected or not
+        strcpy(tempTitle, token);
 
         // Get year
         token = strtok_r(NULL, ",", &saveptr);
         year = atoi(token);
+
+        // If the year was already processed, then a newline needs to be added
+        // BEFORE the title is to be appended to the file
+        // To avoid a new, blank line at the very end of the txt file.
+        
+        if(isInArray(yearsProcessed, 121, year)) {  // non-first title entry
+            strcpy(title, "\n");
+            strcat(title, tempTitle);
+        } else {                                    // first title entry
+            strcpy(title, tempTitle);
+        }
+        yearsProcessed[year % 121] = year;
         
         // construct filePath of file to be created.
         // And open, creating if it doesn't exist, or appending if exists.
