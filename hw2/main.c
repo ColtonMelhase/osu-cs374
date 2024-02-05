@@ -114,7 +114,7 @@ bool processLargest() {
     while((aFile = readdir(currDir)) != NULL) {
         char* extension = strrchr(aFile->d_name, '.'); // gets file extension
         // if file matches prefix 'movies_' and suffix '.csv'
-        if(strncmp(PREFIX, aFile->d_name, strlen(PREFIX)) == 0 && strcmp(SUFFIX, extension) == 0 && extension != NULL) {
+        if(strncmp(PREFIX, aFile->d_name, strlen(PREFIX)) == 0 && strcmp(SUFFIX, extension) == 0) {
             stat(aFile->d_name, &fileStat); // get meta data
             if(largest < fileStat.st_size) {
                 largest = fileStat.st_size;
@@ -167,7 +167,7 @@ bool processSmallest() {
         char* extension = strrchr(aFile->d_name, '.'); // gets file extension
 
         // if file matches prefix 'movies_' and suffix '.csv'
-        if(strncmp(PREFIX, aFile->d_name, strlen(PREFIX)) == 0 && !strcmp(SUFFIX, extension)) {
+        if(strncmp(PREFIX, aFile->d_name, strlen(PREFIX)) == 0 && strcmp(SUFFIX, extension) == 0) {
             stat(aFile->d_name, &fileStat); // get meta data
             if(smallest > fileStat.st_size) {
                 smallest = fileStat.st_size;
