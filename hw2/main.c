@@ -259,16 +259,12 @@ int main() {
     char specificFile[256]; // 255 max file path length
     do {
         displayMainMenu();
-        // choiceMain = -1;
         scanf("%d", &choiceMain);
 
         switch(choiceMain) {
             case 1:
-                
                 do {
                     displayFileMenu();
-                    
-                    //choiceFile = -1;
                     scanf("%d", &choiceFile);
                     
                     switch(choiceFile) {
