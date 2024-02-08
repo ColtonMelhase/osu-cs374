@@ -43,7 +43,7 @@ struct command* parseCommandLine(char* userCommand) {
             i++;
             currCommand->output_file = calloc(strlen(tokens[i]) + 1, sizeof(char));
             strcpy(currCommand->output_file, tokens[i]);
-        } else if(strcmp(tokens[i], "&") == 0) { // Set execute in background flag
+        } else if(strcmp(tokens[i], "&") == 0 && i+1 == tokenCount) { // Set execute in background flag
             currCommand->execBackground = 1;
         } else { // Anything else is set as an argument
             currCommand->args[currCommand->argc] = calloc(strlen(tokens[i]) + 1, sizeof(char));
