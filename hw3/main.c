@@ -54,12 +54,40 @@ struct command* parseCommandLine(char* userCommand) {
     return currCommand;
 }
 
-void sh_exit() {
-    exit(1);
+void printCommandLine(struct command* aCommand) {
+    printf("Command: %s\n", aCommand->command);
+    printf("Argument count: %d\n", aCommand->argc);
+    printf("Arguments:\n");
+    for(int i = 0; i < aCommand->argc; i++) {
+        printf("\t%s\n", aCommand->args[i]);
+    }
+    printf("Input file: %s\n", aCommand->input_file);
+    printf("Output file: %s\n", aCommand->output_file);
+    printf("Background process? %s\n", aCommand->execBackground ? "True" : "False");
 }
 
-void sh_cd() {
+void sh_exit() {
+    // terminate any other processes
 
+    // exit
+    exit(0);
+}
+
+void sh_cd(struct command* command) {
+    if(command->argc > 1) {
+        printf("cd: too many arguments\n"); fflush(stdout);
+        return;
+    } else if(command->argc == 1) {
+        // printf("\nargument: %s\n", command->args[0]);
+        int err = chdir(command->args[0]);
+        if(err == -1) {
+            printf("cd: %s: No such file or directory", command->args[0]); fflush(stdout);
+        }
+    } else {
+        chdir(getenv("HOME"));
+    }
+
+	printf("\n%s\n", getcwd(NULL, 256));
 }
 
 void sh_status() {
@@ -71,15 +99,25 @@ int main() {
 	// allocate memory to store command. Command line must
 	// support max length of 2048. Thus 2049 bytes given. (+1 for \0)
 	char* userCommand = malloc(sizeof(char) * 2049);
-
+	struct command* command;
 	while(1) { // run until exit command
+
+
 		printf(": "); fflush(stdout); // prompt
 		fgets(userCommand, sizeof(char) * 2049, stdin);	// get user input
+		userCommand[strcspn(userCommand, "\n")] = 0;	// strip fgets' trailing \n
+		command = parseCommandLine(userCommand);        // parse user input
+
+        // printCommandLine(command);
 
 		if(userCommand[0] == '#' || userCommand[0] == '\n') { // if command is blank or a comment
 			// do nothing
-		} else {
-			printf("%s", userCommand); fflush(stdout);
+		} else if(strcmp(command->command, "exit") == 0) {
+            sh_exit();
+		} else if(strcmp(command->command, "cd") == 0) {
+            sh_cd(command);
+		} else if(strcmp(command->command, "status") == 0) {
+            sh_status();
 		}
 	}
 }
