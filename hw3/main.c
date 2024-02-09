@@ -5,6 +5,7 @@
 #include <sys/wait.h>
 #include <unistd.h>
 #include <signal.h>
+#include <sys/wait.h>
 
 #include "command.h"
 
@@ -23,13 +24,13 @@ void sh_cd(struct command* command) {
         //printf("\nargument: %s\n", command->args[0]);
         int err = chdir(command->args[0]);
         if(err == -1) {
-            printf("cd: %s: No such file or directory", command->args[0]); fflush(stdout);
+            printf("smallsh: cd: %s: No such file or directory\n", command->args[0]); fflush(stdout);
         }
     } else {
         chdir(getenv("HOME"));
     }
-
-	printf("\n%s\n", getcwd(NULL, 256));
+    // char buf[256];
+	// printf("\n%s\n", getcwd(buf, 256));
 }
 
 void sh_status() {
@@ -57,10 +58,12 @@ int main() {
 
     int status = 0;
 
+    char buf[256];
+
 	while(1) { // run until exit command
 
 
-		printf(": "); fflush(stdout); // prompt
+		printf("%s: ", getcwd(buf, 256)); fflush(stdout); // prompt
 		fgets(userCommand, sizeof(char) * 2049, stdin);	// get user input
 		userCommand[strcspn(userCommand, "\n")] = 0;	// strip fgets' trailing \n
         char* pid_str = malloc(sizeof(char) * 5);       // expand $$
@@ -70,7 +73,7 @@ int main() {
         }
 		command = parseCommandLine(userCommand);        // parse user input
 
-        printCommandLine(command);
+        // printCommandLine(command);
 
 		if(userCommand[0] == '#' || userCommand[0] == '\n') { // if command is blank or a comment
 			// do nothing
@@ -83,7 +86,38 @@ int main() {
             sh_cd(command);
 		} else if(strcmp(command->command, "status") == 0) {
             sh_status();
-		}
+		} else {
+            // If not comment/blank or built-in command, perform EXEC
+
+            // Construct newargv[]
+            char* newargv[1 + command->argc + 1];
+            char bin[300] = "/bin/";
+            newargv[0] = strcat(bin, command->command);
+            for(int i = 0; i < command->argc; i++) {
+                newargv[i+1] = command->args[i];
+            }
+            newargv[command->argc + 1] = NULL;
+
+            int childStatus;
+            pid_t spawnPid = fork();
+
+            switch(spawnPid) {
+                case -1:
+                        perror("fork()\n");
+                        break;
+                case 0:
+                        // In the child process
+                        execv(newargv[0], newargv);
+                        perror("execv");
+                        break;
+                default:
+                        // In the parent process
+                        // Wait for child's termination
+                        spawnPid = waitpid(spawnPid, &childStatus, 0);
+                        break;
+            }
+
+        }
 
         free(pid_str);
         freeCommand(command);
