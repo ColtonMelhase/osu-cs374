@@ -66,8 +66,8 @@ int main() {
 
 	while(1) { // run until exit command
 
-
-		printf("%s: ", getcwd(buf, 256)); fflush(stdout); // prompt
+        printf(": "); fflush(stdout);                        // prompt
+		// printf("%s: ", getcwd(buf, 256)); fflush(stdout); // prompt w/ cwd
 		fgets(userCommand, sizeof(char) * 2049, stdin);	// get user input
 		userCommand[strcspn(userCommand, "\n")] = 0;	// strip fgets' trailing \n
         char* pid_str = malloc(sizeof(char) * 5);       // expand $$
@@ -102,7 +102,7 @@ int main() {
             }
             newargv[command->argc + 1] = NULL;
 
-            int childStatus;
+            
             pid_t spawnPid = fork();
 
             switch(spawnPid) {
@@ -111,8 +111,9 @@ int main() {
                         break;
                 case 0:
                         // In the child process
-                        execv(newargv[0], newargv);
-                        perror("execv");
+                        execvp(newargv[0], newargv);
+                        perror("execvp");
+                        exit(2);
                         break;
                 default:
                         // In the parent process
