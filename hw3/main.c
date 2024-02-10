@@ -33,8 +33,12 @@ void sh_cd(struct command* command) {
 	// printf("\n%s\n", getcwd(buf, 256));
 }
 
-void sh_status() {
-
+void sh_status(int status) {
+    if(WIFEXITED(status)) {
+        printf("exit value %d\n", WEXITSTATUS(status));
+    } else {
+        printf("terminated by signal %d\n", WTERMSIG(status));
+    }
 }
 
 char *strreplace(char *s, const char *s1, const char *s2) {
@@ -56,7 +60,7 @@ int main() {
 	char* userCommand = malloc(sizeof(char) * 2049);
 	struct command* command;
 
-    int status = 0;
+    int childStatus = 0;
 
     char buf[256];
 
@@ -85,7 +89,7 @@ int main() {
 		} else if(strcmp(command->command, "cd") == 0) {
             sh_cd(command);
 		} else if(strcmp(command->command, "status") == 0) {
-            sh_status();
+            sh_status(childStatus);
 		} else {
             // If not comment/blank or built-in command, perform EXEC
 
