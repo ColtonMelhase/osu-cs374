@@ -49,6 +49,7 @@ int main() {
     char buf[256];
 
 	while(1) { // run until exit command
+        userCommand = strcpy(userCommand, "");
 
         printf(": "); fflush(stdout);                        // prompt
 		// printf("%s: ", getcwd(buf, 256)); fflush(stdout); // prompt w/ cwd
