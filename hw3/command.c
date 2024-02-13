@@ -16,7 +16,7 @@ struct command* parseCommandLine(char* userCommand) {
     }
     currCommand->input_file = NULL;
     currCommand->output_file = NULL;
-    currCommand->execBackground = 0;
+    currCommand->runBackground = 0;
 
     // Tokenize words separated by " " in command 
     char* tokens[520];
@@ -44,7 +44,7 @@ struct command* parseCommandLine(char* userCommand) {
             currCommand->output_file = calloc(strlen(tokens[i]) + 1, sizeof(char));
             strcpy(currCommand->output_file, tokens[i]);
         } else if(strcmp(tokens[i], "&") == 0 && i+1 == tokenCount) { // Set execute in background flag
-            currCommand->execBackground = 1;
+            currCommand->runBackground = 1;
         } else { // Anything else is set as an argument
             currCommand->args[currCommand->argc] = calloc(strlen(tokens[i]) + 1, sizeof(char));
             strcpy(currCommand->args[currCommand->argc], tokens[i]);
@@ -70,7 +70,7 @@ void printCommandLine(struct command* aCommand) {
     }
     printf("Input file: %s\n", aCommand->input_file); fflush(stdout);
     printf("Output file: %s\n", aCommand->output_file); fflush(stdout);
-    printf("Background process? %s\n", aCommand->execBackground ? "True" : "False"); fflush(stdout);
+    printf("Background process? %s\n", aCommand->runBackground ? "True" : "False"); fflush(stdout);
 }
 
 void freeCommand(struct command* aCommand) {

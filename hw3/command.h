@@ -4,7 +4,7 @@ struct command {
 	char* args[512];
 	char* input_file;
 	char* output_file;
-	int execBackground;
+	int runBackground;
 };
 
 
