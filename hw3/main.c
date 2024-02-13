@@ -77,11 +77,9 @@ int main() {
             sh_status(childStatus);
 		} else {
             // If not comment/blank or built-in command, perform EXEC
-
             // Construct newargv[]
             char* newargv[1 + command->argc + 1];
-            char bin[300] = "/bin/";
-            newargv[0] = strcat(bin, command->command);
+            newargv[0] = command->command;
             for(int i = 0; i < command->argc; i++) {
                 newargv[i+1] = command->args[i];
             }
