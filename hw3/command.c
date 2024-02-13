@@ -62,15 +62,15 @@ struct command* parseCommandLine(char* userCommand) {
 }
 
 void printCommandLine(struct command* aCommand) {
-    printf("Command: %s\n", aCommand->command);
-    printf("Argument count: %d\n", aCommand->argc);
-    printf("Arguments:\n");
+    printf("Command: %s\n", aCommand->command); fflush(stdout);
+    printf("Argument count: %d\n", aCommand->argc); fflush(stdout);
+    printf("Arguments:\n"); fflush(stdout);
     for(int i = 0; i < aCommand->argc; i++) {
-        printf("\t%s\n", aCommand->args[i]);
+        printf("\t%s\n", aCommand->args[i]); fflush(stdout);
     }
-    printf("Input file: %s\n", aCommand->input_file);
-    printf("Output file: %s\n", aCommand->output_file);
-    printf("Background process? %s\n", aCommand->execBackground ? "True" : "False");
+    printf("Input file: %s\n", aCommand->input_file); fflush(stdout);
+    printf("Output file: %s\n", aCommand->output_file); fflush(stdout);
+    printf("Background process? %s\n", aCommand->execBackground ? "True" : "False"); fflush(stdout);
 }
 
 void freeCommand(struct command* aCommand) {
