@@ -63,7 +63,7 @@ int main() {
 
         // printCommandLine(command);
 
-		if(userCommand[0] == '#' || userCommand[0] == '\n') { // if command is blank or a comment
+		if(userCommand[0] == '#' || userCommand[0] == '\n' || command->command == NULL) { // if command is blank or a comment
 			// do nothing
 		} else if(strcmp(command->command, "exit") == 0) {
             free(userCommand);
