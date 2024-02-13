@@ -59,7 +59,7 @@ int main() {
 	char* userCommand = malloc(sizeof(char) * 2049);
 	struct command* command;
 
-    int childStatus = 0;
+    int* childStatus = 0;
 
     char buf[256];
 

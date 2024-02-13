@@ -30,7 +30,7 @@ void sh_cd(struct command* command) {
 	// printf("\n%s\n", getcwd(buf, 256));
 }
 
-void sh_status(int status) {
+void sh_status(int* status) {
     if(WIFEXITED(status)) {
         printf("exit value %d\n", WEXITSTATUS(status));
     } else {
