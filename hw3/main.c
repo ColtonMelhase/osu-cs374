@@ -21,7 +21,23 @@ char *strreplace(char *s, const char *s1, const char *s2) {
     return s;
 }
 
+void handle_SIGINT(int signo) {
+    char* message = "\n";
+    write(STDOUT_FILENO, message, 1);
+}
+
+void ignore_SIGINT() {
+    struct sigaction SIGINT_action = {0};
+    SIGINT_action.sa_handler = handle_SIGINT;
+    sigfillset(&SIGINT_action.sa_mask);
+    SIGINT_action.sa_flags = 0;
+    sigaction(SIGINT, &SIGINT_action, NULL);
+}
 int main() {
+
+    // Set SIGINT handler for the shell to ignore ctrl+C
+    ignore_SIGINT();
+
 
 	// allocate memory to store command. Command line must
 	// support max length of 2048. Thus 2049 bytes given. (+1 for \0)
