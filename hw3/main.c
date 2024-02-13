@@ -25,19 +25,34 @@ void handle_SIGINT(int signo) {
     char* message = "\n";
     write(STDOUT_FILENO, message, 1);
 }
-
-void ignore_SIGINT() {
+void configure_SIGINT() {
     struct sigaction SIGINT_action = {0};
     SIGINT_action.sa_handler = handle_SIGINT;
     sigfillset(&SIGINT_action.sa_mask);
     SIGINT_action.sa_flags = 0;
     sigaction(SIGINT, &SIGINT_action, NULL);
 }
+
+// SIGTSTP Handler
+void handle_SIGTSTP(int signo) {
+    char* message = "\nEntering foreground-only mode (& is now ignored)\n: ";
+    write(STDOUT_FILENO, message, 52);
+}
+// Sets the SIGTSTP response to handle_SIGTSTP()
+void configure_SIGTSTP() {
+    struct sigaction SIGTSTP_action = {0};
+    SIGTSTP_action.sa_handler = handle_SIGTSTP;
+    sigfillset(&SIGTSTP_action.sa_mask);
+    SIGTSTP_action.sa_flags = SA_RESTART;
+    sigaction(SIGTSTP, &SIGTSTP_action, NULL);
+}
+
+
 int main() {
 
     // Set SIGINT handler for the shell to ignore ctrl+C
-    ignore_SIGINT();
-
+    configure_SIGINT();
+    configure_SIGTSTP();
 
 	// allocate memory to store command. Command line must
 	// support max length of 2048. Thus 2049 bytes given. (+1 for \0)
@@ -56,7 +71,7 @@ int main() {
 		fgets(userCommand, sizeof(char) * 2049, stdin);	// get user input
 		userCommand[strcspn(userCommand, "\n")] = 0;	// strip fgets' trailing \n
         char* pid_str = malloc(sizeof(char) * 5);       // expand $$
-        while(strstr(userCommand, "$$") != NULL) {
+        while(strstr(userCommand, "$$") != NULL) {      // replace '$$' w/ PID
             sprintf(pid_str, "%d", getpid());
             strreplace(userCommand, "$$", pid_str);
         }
@@ -102,11 +117,11 @@ int main() {
                         // In the parent process
                         // Wait for child's termination
                         spawnPid = waitpid(spawnPid, &childStatus, 0);
+                        printf("Process PID: %d is done.\n", spawnPid); fflush(stdout);
                         break;
             }
 
         }
-
         free(pid_str);
         freeCommand(command);
 	}
