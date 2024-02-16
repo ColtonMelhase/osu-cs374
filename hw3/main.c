@@ -80,7 +80,7 @@ void configure_SIGCHLD() {
     sigaction(SIGCHLD, &SIGCHLD_action, NULL);
 }
 
-void processHandler(struct command* command, int childStatus, int* mode) {
+void processHandler(struct command* command, int* childStatus, int* mode) {
     // If not comment/blank or built-in command, perform EXEC
 
     char errMsg[100];
@@ -151,11 +151,11 @@ void processHandler(struct command* command, int childStatus, int* mode) {
                 // Depending if & is given and/or foreground-only mode is enabled, wait
                 if(*mode == 1 || command->runBackground == 0) { // foreground-only mode OR & is not given
                     // printf("FOREGROUND\n"); fflush(stdout);
-                    spawnPid = waitpid(spawnPid, &childStatus, 0);
+                    spawnPid = waitpid(spawnPid, childStatus, 0);
                 } else if(command->runBackground == 1) { // if & is given
                     // printf("BACKGROUND\n"); fflush(stdout);
                     printf("background pid is %d\n", spawnPid); fflush(stdout);
-                    spawnPid = waitpid(spawnPid, &childStatus, WNOHANG);
+                    spawnPid = waitpid(spawnPid, childStatus, WNOHANG);
                 }
                 break;
     }
@@ -223,7 +223,7 @@ int main() {
             printf("%s", sh_status(childStatus)); fflush(stdout);
 		} else {
             promptPresent = 0;
-            processHandler(command, childStatus, &mode);
+            processHandler(command, &childStatus, &mode);
         }
         free(pid_str);
         freeCommand(command);
