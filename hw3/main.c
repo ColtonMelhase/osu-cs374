@@ -15,6 +15,29 @@ int sigChldFlag = 0;
 pid_t sigChldPID = 0;
 int sigChldStatus = 0;
 
+int bgCount = 0;
+int bgProcesses[50];
+
+bool isInArray(int arr[], int size, int val) {
+    // // //
+    // Given an array of integers, the size of the array, and the value to look for,
+    // return true if the integer is already in the array, and false if it is not.
+
+    // Parameters:
+    //     arr: The array of numbers
+    //     size: The size of the array
+    //     val: The value to look for
+
+    // Return:
+    //     boolean reporting if val is in arr or not.
+    // // //
+    for(int i = 0; i < size; i++) {
+        if(arr[i] == val) {
+            return true;
+        }
+    }
+    return false;
+}
 char *strreplace(char *s, const char *s1, const char *s2) {
     char *p = strstr(s, s1);
     if (p != NULL) {
@@ -62,24 +85,27 @@ void configure_SIGTSTP() {
     sigaction(SIGTSTP, &SIGTSTP_action, NULL);
 }
 
-void handle_SIGCHLD(int signo) {
-    pid_t childPid;
-    int childStatus;
-    while((childPid = waitpid(-1, &sigChldStatus, WNOHANG)) > 0) {
-        sigChldFlag = 1;
-        sigChldPID = childPid;
-    }
-    // char* message = "\n";
-    // write(STDOUT_FILENO, message, 1);
-}
-void configure_SIGCHLD() {
-    struct sigaction SIGCHLD_action = {0};
-    SIGCHLD_action.sa_handler = handle_SIGCHLD;
-    sigfillset(&SIGCHLD_action.sa_mask);
-    SIGCHLD_action.sa_flags = 0;
-    sigaction(SIGCHLD, &SIGCHLD_action, NULL);
-}
-
+// void handle_SIGCHLD(int signo) {
+//     pid_t childPid;
+//     int childStatus;
+//     while((childPid = waitpid(-1, &sigChldStatus, WNOHANG)) > 0) {
+//         if(isInArray())
+//         sigChldFlag = 1;
+//         sigChldPID = childPid;
+//             // bgCount--;
+//             // bgProcesses[bgCount] = -5;
+        
+//     }
+//     // char* message = "\n";
+//     // write(STDOUT_FILENO, message, 1);
+// }
+// void configure_SIGCHLD() {
+//     struct sigaction SIGCHLD_action = {0};
+//     SIGCHLD_action.sa_handler = handle_SIGCHLD;
+//     sigfillset(&SIGCHLD_action.sa_mask);
+//     SIGCHLD_action.sa_flags = 0;
+//     sigaction(SIGCHLD, &SIGCHLD_action, NULL);
+// }
 void processHandler(struct command* command, int* childStatus, int* mode) {
     // If not comment/blank or built-in command, perform EXEC
 
@@ -154,6 +180,8 @@ void processHandler(struct command* command, int* childStatus, int* mode) {
                     spawnPid = waitpid(spawnPid, childStatus, 0);
                 } else if(command->runBackground == 1) { // if & is given
                     // printf("BACKGROUND\n"); fflush(stdout);
+                    bgProcesses[bgCount] = spawnPid;
+                    bgCount++;
                     printf("background pid is %d\n", spawnPid); fflush(stdout);
                     spawnPid = waitpid(spawnPid, childStatus, WNOHANG);
                 }
@@ -161,13 +189,27 @@ void processHandler(struct command* command, int* childStatus, int* mode) {
     }
 }
 
+void checkBackgroundProcesses() {
+    pid_t checkPid;
+    pid_t checkStatus;
+    // printf("\nCURRENT BACKGROUND PROCESSES:\n"); fflush(stdout);
+    // for(int i = 0; i < bgCount; i++) {
+    //     printf("\t%d\n", bgProcesses[i]); fflush(stdout);
+    // }
+    // printf("\nCOMPLETED BACKGROUND PROCESSES:\n"); fflush(stdout);
+    for(int i = 0; i < bgCount; i++) {
+        if(checkPid = waitpid(bgProcesses[i], &checkStatus, WNOHANG) > 0) {
+            printf("background pid %d is done: %s\n", bgProcesses[i], sh_status(checkStatus));
+        }
+    }
+}
 
 int main() {
     
     // Set SIGINT handler for the shell to ignore ctrl+C
     configure_SIGINT();
     configure_SIGTSTP();
-    configure_SIGCHLD();
+    // configure_SIGCHLD();
 
 	// allocate memory to store command. Command line must
 	// support max length of 2048. Thus 2049 bytes given. (+1 for \0)
@@ -182,15 +224,15 @@ int main() {
 
 	while(1) { // run until exit command
 
-        if(sigChldFlag) {
-            if(promptPresent) {
-                printf("\n"); fflush(stdout);
-            }
-            printf("background pid %d is done: %s\n", sigChldPID, sh_status(sigChldStatus)); 
-            // sh_status(sigChldStatus);
-            sigChldFlag = 0;
-        }
-
+        // if(sigChldFlag) {
+        //     if(promptPresent) {
+        //         printf("\n"); fflush(stdout);
+        //     }
+        //     printf("background pid %d is done: %s\n", sigChldPID, sh_status(sigChldStatus)); 
+        //     // sh_status(sigChldStatus);
+        //     sigChldFlag = 0;
+        // }
+        checkBackgroundProcesses();
         userCommand = strcpy(userCommand, "");
 
         printf(": "); fflush(stdout);                        // prompt
