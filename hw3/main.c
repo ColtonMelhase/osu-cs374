@@ -7,6 +7,7 @@
 #include <signal.h>
 #include <sys/wait.h>
 #include <fcntl.h>
+#include <stdbool.h>
 
 #include "builtInCommands.h"
 
