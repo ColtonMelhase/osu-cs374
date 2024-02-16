@@ -186,8 +186,8 @@ int main() {
             if(promptPresent) {
                 printf("\n"); fflush(stdout);
             }
-            printf("background pid %d is done: ", sigChldPID); fflush(stdout);
-            sh_status(sigChldStatus);
+            printf("background pid %d is done: %s\n", sigChldPID, sh_status(sigChldStatus)); 
+            // sh_status(sigChldStatus);
             sigChldFlag = 0;
         }
 
@@ -220,7 +220,7 @@ int main() {
             sh_cd(command);
 		} else if(strcmp(command->command, "status") == 0) {
             promptPresent = 0;
-            sh_status(childStatus);
+            printf("%s", sh_status(childStatus)); fflush(stdout);
 		} else {
             promptPresent = 0;
             processHandler(command, childStatus, &mode);
