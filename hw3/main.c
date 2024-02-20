@@ -19,6 +19,8 @@ int sigChldStatus = 0;
 int bgCount = 0;
 int bgProcesses[50];
 
+pid_t fgPid = 0;
+
 bool isInArray(int arr[], int size, int val) {
     // // //
     // Given an array of integers, the size of the array, and the value to look for,
@@ -53,6 +55,10 @@ char *strreplace(char *s, const char *s1, const char *s2) {
 
 // SIGINT Handler
 void handle_SIGINT(int signo) {
+    if(fgPid) {
+        kill(fgPid, SIGINT);
+        return;
+    }
     char* message = "\n";
     write(STDOUT_FILENO, message, 1);
 }
@@ -178,6 +184,7 @@ void processHandler(struct command* command, int* childStatus, int* mode) {
                 // Depending if & is given and/or foreground-only mode is enabled, wait
                 if(*mode == 1 || command->runBackground == 0) { // foreground-only mode OR & is not given
                     // printf("FOREGROUND\n"); fflush(stdout);
+                    fgPid = spawnPid;
                     spawnPid = waitpid(spawnPid, childStatus, 0);
                 } else if(command->runBackground == 1) { // if & is given
                     // printf("BACKGROUND\n"); fflush(stdout);
@@ -202,6 +209,14 @@ void checkBackgroundProcesses() {
         if(checkPid = waitpid(bgProcesses[i], &checkStatus, WNOHANG) > 0) {
             printf("background pid %d is done: %s\n", bgProcesses[i], sh_status(checkStatus));
         }
+    }
+}
+
+void checkForeGroundProcess() {
+    pid_t checkPid;
+    pid_t checkStatus;
+    if(checkPid = waitpid(fgPid, &checkStatus, 0) > 0) {
+        printf("%s\n", sh_status(checkStatus));
     }
 }
 
@@ -234,6 +249,7 @@ int main() {
         //     sigChldFlag = 0;
         // }
         checkBackgroundProcesses();
+        checkForeGroundProcess();
         userCommand = strcpy(userCommand, "");
 
         printf(": "); fflush(stdout);                        // prompt
