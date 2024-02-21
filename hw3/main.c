@@ -284,7 +284,7 @@ int main() {
             free(userCommand);
             free(pid_str);
             freeCommand(command);
-            sh_exit();
+            sh_exit(fgPid, bgProcesses, bgCount);
 		} else if(strcmp(command->command, "cd") == 0) {
             promptPresent = 0;
             sh_cd(command);

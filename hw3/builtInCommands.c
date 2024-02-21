@@ -2,12 +2,19 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
+#include <signal.h>
 
 #include "builtInCommands.h"
 
 
-void sh_exit() {
+void sh_exit(pid_t fgPid, pid_t bgPids[], int bgCount) {
     // terminate any other processes
+    if(fgPid) {
+        kill(fgPid, SIGTERM);
+    }
+    for(int i = 0; i < bgCount; i++) {
+        kill(bgPids[i], SIGTERM);
+    }
 
     // exit
     exit(0);
