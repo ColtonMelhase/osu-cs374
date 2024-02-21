@@ -219,11 +219,14 @@ void checkBackgroundProcesses() {
     }
 }
 
-void checkForeGroundProcess() {
+void checkForegroundProcess() {
     pid_t checkPid;
     pid_t checkStatus;
-    if(checkPid = waitpid(fgPid, &checkStatus, 0) > 0) {
+    if(fgPid) {
+        if(checkPid = waitpid(fgPid, &checkStatus, 0) > 0) {
         printf("%s\n", sh_status(checkStatus));
+        fgPid = 0;
+        }
     }
 }
 
@@ -255,8 +258,9 @@ int main() {
         //     // sh_status(sigChldStatus);
         //     sigChldFlag = 0;
         // }
+
         checkBackgroundProcesses();
-        checkForeGroundProcess();
+        checkForegroundProcess();
         userCommand = strcpy(userCommand, "");
 
         printf(": "); fflush(stdout);                        // prompt
