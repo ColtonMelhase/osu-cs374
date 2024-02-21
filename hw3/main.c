@@ -242,7 +242,9 @@ void checkBackgroundProcesses() {
     // printf("\nCOMPLETED BACKGROUND PROCESSES:\n"); fflush(stdout);
     for(int i = 0; i < bgCount; i++) {
         if(checkPid = waitpid(bgProcesses[i], &checkStatus, WNOHANG) > 0) {
-            printf("background pid %d is done: %s\n", bgProcesses[i], sh_status(checkStatus));
+            printf("background pid %d is done: ", bgProcesses[i]); fflush(stdout);
+            sh_status(checkStatus);
+            printf("\n"); fflush(stdout);
         }
     }
 }
@@ -252,7 +254,8 @@ void checkForegroundProcess() {
     pid_t checkStatus;
     if(fgPid) {
         if(checkPid = waitpid(fgPid, &checkStatus, 0) > 0) {
-        printf("%s\n", sh_status(checkStatus));
+        sh_status(checkStatus);
+        printf("\n"); fflush(stdout);
         fgPid = 0;
         }
     }
@@ -318,7 +321,8 @@ int main() {
             sh_cd(command);
 		} else if(strcmp(command->command, "status") == 0) {
             promptPresent = 0;
-            printf("%s", sh_status(childStatus)); fflush(stdout);
+            sh_status(childStatus);
+            printf("\n"); fflush(stdout);
 		} else {
             promptPresent = 0;
             processHandler(command, &childStatus, &mode);

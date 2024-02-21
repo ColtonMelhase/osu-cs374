@@ -37,14 +37,16 @@ void sh_cd(struct command* command) {
 	// printf("\n%s\n", getcwd(buf, 256));
 }
 
-char* sh_status(int status) {
+void sh_status(int status) {
     if(WIFEXITED(status)) {
         char* exit = calloc(15, sizeof(char));
         sprintf(exit, "exit value %d", WEXITSTATUS(status));
-        return exit;
+        printf("%s", exit); fflush(stdout);
+        free(exit);
     } else {
         char* terminated = calloc(25, sizeof(char));
         sprintf(terminated, "terminated by signal %d", WTERMSIG(status));
-        return terminated;
+        printf("%s", terminated); fflush(stdout);
+        free(terminated);
     }
 }
