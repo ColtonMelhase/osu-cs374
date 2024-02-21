@@ -171,6 +171,13 @@ void processHandler(struct command* command, int* childStatus, int* mode) {
                 break;
         case 0:
                 // In the child process
+                if(command->runBackground == 1) {
+                    struct sigaction SIGINT_action = {0};
+                    SIGINT_action.sa_handler = SIG_IGN;
+                    sigfillset(&SIGINT_action.sa_mask);
+                    SIGINT_action.sa_flags = 0;
+                    sigaction(SIGINT, &SIGINT_action, NULL);
+                }
                 execvp(newargv[0], newargv);
                 perror("execvp");
                 exit(1);
