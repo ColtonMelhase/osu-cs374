@@ -144,6 +144,20 @@ void processHandler(struct command* command, int* childStatus, int* mode) {
             perror(errMsg);
             return;
         }
+    } else if (command->runBackground == 1) { // input not given and bg ps -> /dev/null
+        int sourceFD = open("/dev/null", O_RDONLY);
+        if (sourceFD == -1) { 
+            sprintf(errMsg, "open(): %s", "/dev/null");
+            perror(errMsg); 
+            return;
+        }
+        // printf("sourceFD == %d\n", sourceFD); fflush(stdout);
+        int dupResult = dup2(sourceFD, 0);
+        if (dupResult == -1) {
+            sprintf(errMsg, "dup2(): %s", sourceFD);
+            perror(errMsg);
+            return;
+        }
     }
     
     // Set output if given
@@ -161,6 +175,20 @@ void processHandler(struct command* command, int* childStatus, int* mode) {
             perror(errMsg); 
             return;
         }
+    } else if (command->runBackground == 1) { // output not given and bg ps -> /dev/null
+        int targetFD = open("/dev/null", O_WRONLY | O_CREAT | O_TRUNC, 0644);
+        if (targetFD == -1) { 
+            sprintf(errMsg, "open(): %s", "/dev/null");
+            perror(errMsg); 
+            return;
+        }
+        // printf("targetFD == %d\n", targetFD); fflush(stdout);
+        int dupResult = dup2(targetFD, 0);
+        if (dupResult == -1) {
+            sprintf(errMsg, "dup2(): %s", targetFD);
+            perror(errMsg);
+            return;
+        }
     }
     
     pid_t spawnPid = fork();
@@ -171,7 +199,7 @@ void processHandler(struct command* command, int* childStatus, int* mode) {
                 break;
         case 0:
                 // In the child process
-                if(command->runBackground == 1) {
+                if(command->runBackground == 1) { // if bg ps
                     struct sigaction SIGINT_action = {0};
                     SIGINT_action.sa_handler = SIG_IGN;
                     sigfillset(&SIGINT_action.sa_mask);
