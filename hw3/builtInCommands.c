@@ -25,7 +25,6 @@ void sh_cd(struct command* command) {
         printf("cd: too many arguments\n"); fflush(stdout);
         return;
     } else if(command->argc == 1) {
-        //printf("\nargument: %s\n", command->args[0]);
         int err = chdir(command->args[0]);
         if(err == -1) {
             printf("smallsh: cd: %s: No such file or directory\n", command->args[0]); fflush(stdout);
@@ -33,8 +32,6 @@ void sh_cd(struct command* command) {
     } else {
         chdir(getenv("HOME"));
     }
-    // char buf[256];
-	// printf("\n%s\n", getcwd(buf, 256));
 }
 
 void sh_status(int status) {

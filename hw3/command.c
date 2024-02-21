@@ -56,8 +56,7 @@ struct command* parseCommandLine(char* userCommand) {
     for(int i = 0; i < tokenCount; i++) {
         free(tokens[i]);
     }
-    // free(token);
-    // free(saveptr);
+
     return currCommand;
 }
 

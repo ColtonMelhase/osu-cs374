@@ -92,27 +92,6 @@ void configure_SIGTSTP() {
     sigaction(SIGTSTP, &SIGTSTP_action, NULL);
 }
 
-// void handle_SIGCHLD(int signo) {
-//     pid_t childPid;
-//     int childStatus;
-//     while((childPid = waitpid(-1, &sigChldStatus, WNOHANG)) > 0) {
-//         if(isInArray())
-//         sigChldFlag = 1;
-//         sigChldPID = childPid;
-//             // bgCount--;
-//             // bgProcesses[bgCount] = -5;
-        
-//     }
-//     // char* message = "\n";
-//     // write(STDOUT_FILENO, message, 1);
-// }
-// void configure_SIGCHLD() {
-//     struct sigaction SIGCHLD_action = {0};
-//     SIGCHLD_action.sa_handler = handle_SIGCHLD;
-//     sigfillset(&SIGCHLD_action.sa_mask);
-//     SIGCHLD_action.sa_flags = 0;
-//     sigaction(SIGCHLD, &SIGCHLD_action, NULL);
-// }
 void processHandler(struct command* command, int* childStatus, int* mode) {
     // If not comment/blank or built-in command, perform EXEC
 
@@ -235,11 +214,7 @@ void processHandler(struct command* command, int* childStatus, int* mode) {
 void checkBackgroundProcesses() {
     pid_t checkPid;
     pid_t checkStatus;
-    // printf("\nCURRENT BACKGROUND PROCESSES:\n"); fflush(stdout);
-    // for(int i = 0; i < bgCount; i++) {
-    //     printf("\t%d\n", bgProcesses[i]); fflush(stdout);
-    // }
-    // printf("\nCOMPLETED BACKGROUND PROCESSES:\n"); fflush(stdout);
+
     for(int i = 0; i < bgCount; i++) {
         if(checkPid = waitpid(bgProcesses[i], &checkStatus, WNOHANG) > 0) {
             printf("background pid %d is done: ", bgProcesses[i]); fflush(stdout);
@@ -280,15 +255,6 @@ int main() {
     char buf[256];
 
 	while(1) { // run until exit command
-
-        // if(sigChldFlag) {
-        //     if(promptPresent) {
-        //         printf("\n"); fflush(stdout);
-        //     }
-        //     printf("background pid %d is done: %s\n", sigChldPID, sh_status(sigChldStatus)); 
-        //     // sh_status(sigChldStatus);
-        //     sigChldFlag = 0;
-        // }
 
         checkBackgroundProcesses();
         checkForegroundProcess();
