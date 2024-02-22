@@ -47,19 +47,30 @@ bool isInArray(int arr[], int size, int val) {
     return false;
 }
 
-char* replacePid(char *s) {
-    char* pid_str = malloc(sizeof(char) * 5);
+void replacePid(char *s) {
+    // // //
+    // Given a string representing the user input, uses strstr to check if "$$" is present.
+    // Manipulates memory within the string to inject the PID.
+
+    // Used in checkBackgroundProcess() to check if a PID in bgProcesses[] is completed
+
+    // Parameters:
+    //     arr: The array of numbers
+    //     size: The size of the array
+    //     val: The value to look for
+
+    // Return:
+    //     boolean reporting if val is in arr or not.
+    // // //
+    char* pid_str = malloc(sizeof(char) * 10);
     sprintf(pid_str, "%d", getpid());
     while(strstr(s, "$$") != NULL) {
         char *p = strstr(s, "$$");
-        int len1 = strlen("$$");
-        int len2 = strlen(pid_str);
-        if (len1 != len2)
-            memmove(p + len2, p + len1, strlen(p + len1) + 1);
-        memcpy(p, pid_str, len2);
+        if (strlen(pid_str) != 2) // strlen("$$") == 2
+            memmove(p + strlen(pid_str), p + 2, strlen(p + 2) + 1);
+        memcpy(p, pid_str, strlen(pid_str));
     }
     free(pid_str);
-    return s;
 }
 
 // SIGINT Handler
