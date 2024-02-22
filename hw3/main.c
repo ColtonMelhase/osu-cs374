@@ -1,3 +1,8 @@
+// Colton Melhase
+// melhasec
+// CS374 W2024p
+// Project 3 - Small Shell
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -41,15 +46,19 @@ bool isInArray(int arr[], int size, int val) {
     }
     return false;
 }
-char *strreplace(char *s, const char *s1, const char *s2) {
-    char *p = strstr(s, s1);
-    if (p != NULL) {
-        size_t len1 = strlen(s1);
-        size_t len2 = strlen(s2);
+
+char* replacePid(char *s) {
+    char* pid_str = malloc(sizeof(char) * 5);
+    sprintf(pid_str, "%d", getpid());
+    while(strstr(s, "$$") != NULL) {
+        char *p = strstr(s, "$$");
+        int len1 = strlen("$$");
+        int len2 = strlen(pid_str);
         if (len1 != len2)
             memmove(p + len2, p + len1, strlen(p + len1) + 1);
-        memcpy(p, s2, len2);
+        memcpy(p, pid_str, len2);
     }
+    free(pid_str);
     return s;
 }
 
@@ -252,7 +261,7 @@ int main() {
 
     int promptPresent = 0;
 
-    char buf[256];
+    // char buf[256];
 
 	while(1) { // run until exit command
 
@@ -265,11 +274,9 @@ int main() {
 		// printf("%s: ", getcwd(buf, 256)); fflush(stdout); // prompt w/ cwd
 		fgets(userCommand, sizeof(char) * 2049, stdin);	// get user input
 		userCommand[strcspn(userCommand, "\n")] = 0;	// strip fgets' trailing \n
-        char* pid_str = malloc(sizeof(char) * 5);       // expand $$
-        while(strstr(userCommand, "$$") != NULL) {      // replace '$$' w/ PID
-            sprintf(pid_str, "%d", getpid());
-            strreplace(userCommand, "$$", pid_str);
-        }
+        
+        replacePid(userCommand);
+        
 		command = parseCommandLine(userCommand);        // parse user input
 
         // printCommandLine(command);
@@ -279,7 +286,6 @@ int main() {
 		} else if(strcmp(command->command, "exit") == 0) {
             promptPresent = 0;
             free(userCommand);
-            free(pid_str);
             freeCommand(command);
             sh_exit(fgPid, bgProcesses, bgCount);
 		} else if(strcmp(command->command, "cd") == 0) {
@@ -293,7 +299,6 @@ int main() {
             promptPresent = 0;
             processHandler(command, &childStatus, &mode);
         }
-        free(pid_str);
         freeCommand(command);
 	}
 }
