@@ -16,20 +16,20 @@
 
 #include "builtInCommands.h"
 
-int mode = 0; // 0 == foreground/background. 1 == foreground only.
-int sigChldFlag = 0;
-pid_t sigChldPID = 0;
-int sigChldStatus = 0;
+// Global variables to keep track of meta data like the shell mode and processes.
+int mode = 0;           // 0 -> foreground/background. 1 -> foreground only.
 
-int bgCount = 0;
-int bgProcesses[50];
+int bgCount = 0;        // tracks the # of background processes executed
+int bgProcesses[50];    // tracks the history of background processes
 
-pid_t fgPid = 0;
+pid_t fgPid = 0;        // if non-zero, foreground process currently executing.
 
 bool isInArray(int arr[], int size, int val) {
     // // //
     // Given an array of integers, the size of the array, and the value to look for,
     // return true if the integer is already in the array, and false if it is not.
+
+    // Used in checkBackgroundProcess() to check if a PID in bgProcesses[] is completed
 
     // Parameters:
     //     arr: The array of numbers
@@ -55,12 +55,7 @@ void replacePid(char *s) {
     // Used in checkBackgroundProcess() to check if a PID in bgProcesses[] is completed
 
     // Parameters:
-    //     arr: The array of numbers
-    //     size: The size of the array
-    //     val: The value to look for
-
-    // Return:
-    //     boolean reporting if val is in arr or not.
+    //     s: string representing the user input
     // // //
     char* pid_str = malloc(sizeof(char) * 10);
     sprintf(pid_str, "%d", getpid());
@@ -73,8 +68,13 @@ void replacePid(char *s) {
     free(pid_str);
 }
 
-// SIGINT Handler
+
 void handle_SIGINT(int signo) {
+    // SIGINT Handler
+    // If a foreground process is active, SIGINT from the parent will forward the SIGINT
+    // to the child process. The checkForegroundProcess()'s waitpid will now catch the end
+    // of the process, and display the status.
+    // Else, create a newline, and prompt again.
     if(fgPid) {
         kill(fgPid, SIGINT);
         return;
@@ -83,15 +83,20 @@ void handle_SIGINT(int signo) {
     write(STDOUT_FILENO, message, 1);
 }
 void configure_SIGINT() {
-    struct sigaction SIGINT_action = {0};
+    // Sets the SIGINT response to handle_SIGINT()
+    struct sigaction SIGINT_action = {{0}};
     SIGINT_action.sa_handler = handle_SIGINT;
     sigfillset(&SIGINT_action.sa_mask);
     SIGINT_action.sa_flags = 0;
     sigaction(SIGINT, &SIGINT_action, NULL);
 }
 
-// SIGTSTP Handler
+
 void handle_SIGTSTP(int signo) {
+    // SIGTSTP Handler
+    // Toggles the global mode variable. If mode = 0, then it will toggle to 1, representing
+    // foreground-only mode, and print a message.
+    // If mode = 1, it will toggle to 0, representing background/foreground mode, and print a message
     if(mode == 0) {
         mode = 1;
         char* message = "\nEntering foreground-only mode (& is now ignored)\n: ";
@@ -101,11 +106,11 @@ void handle_SIGTSTP(int signo) {
         char* message = "\nExiting foreground-only mode\n: ";
         write(STDOUT_FILENO, message, 32);
     }
-    
 }
-// Sets the SIGTSTP response to handle_SIGTSTP()
 void configure_SIGTSTP() {
-    struct sigaction SIGTSTP_action = {0};
+    // Sets the SIGTSTP response to handle_SIGTSTP()
+    // Note the flag SA_RESTART to not interrupt any current process.  
+    struct sigaction SIGTSTP_action = {{0}};
     SIGTSTP_action.sa_handler = handle_SIGTSTP;
     sigfillset(&SIGTSTP_action.sa_mask);
     SIGTSTP_action.sa_flags = SA_RESTART;
@@ -113,10 +118,25 @@ void configure_SIGTSTP() {
 }
 
 void processHandler(struct command* command, int* childStatus, int* mode) {
-    // If not comment/blank or built-in command, perform EXEC
+    // // //
+    // The processHandler is called when the command does not match any built-in functions.
+    // The handler will direct the IO to the proper files and/or stream, and then call
+    // fork() and execvp() and handle child and parent processes.
+
+    // Packaging all of these operations within this handler allows for a less-bloated main function,
+    // and ensures all children are managed the same way.
+
+    // Parameters:
+    //     command: the struct containing the command details
+    //     childStatus: the pointer containing the status code for the child
+    //     mode: the pointer to the global int representing foreground-only mode
+
+    // Return:
+    //     None
+    // // //
 
     char errMsg[100];
-    // Construct newargv[]
+    // Construct newargv[] for execvp() call.
     char* newargv[1 + command->argc + 1];
     newargv[0] = command->command;
     for(int i = 0; i < command->argc; i++) {
@@ -124,22 +144,23 @@ void processHandler(struct command* command, int* childStatus, int* mode) {
     }
     newargv[command->argc + 1] = NULL;
 
-    // save stin/stout to redirect back after fork
+    // save stin/stout to redirect parent back after fork
     int saved_stin = dup(0);
     int saved_stout = dup(1);
+
     // Set file IO
-    // Set input if given
-    if(command->input_file != NULL) {
+    
+    // Input
+    if(command->input_file != NULL) { // Set input if given
         int sourceFD = open(command->input_file, O_RDONLY);
         if (sourceFD == -1) { 
             sprintf(errMsg, "open(): %s", command->input_file);
             perror(errMsg); 
             return;
         }
-        // printf("sourceFD == %d\n", sourceFD); fflush(stdout);
         int dupResult = dup2(sourceFD, 0);
         if (dupResult == -1) {
-            sprintf(errMsg, "dup2(): %s", sourceFD);
+            sprintf(errMsg, "dup2(): %d", sourceFD);
             perror(errMsg);
             return;
         }
@@ -150,27 +171,25 @@ void processHandler(struct command* command, int* childStatus, int* mode) {
             perror(errMsg); 
             return;
         }
-        // printf("sourceFD == %d\n", sourceFD); fflush(stdout);
         int dupResult = dup2(sourceFD, 0);
         if (dupResult == -1) {
-            sprintf(errMsg, "dup2(): %s", sourceFD);
+            sprintf(errMsg, "dup2(): %d", sourceFD);
             perror(errMsg);
             return;
         }
     }
     
-    // Set output if given
-    if(command->output_file != NULL) {
+    // Output
+    if(command->output_file != NULL) { // Set output if given
         int targetFD = open(command->output_file, O_WRONLY | O_CREAT | O_TRUNC, 0644);
         if (targetFD == -1) { 
             sprintf(errMsg, "open(): %s", command->output_file);
             perror(errMsg); 
             return;
 	    }
-        // printf("targetFD == %d\n", targetFD); fflush(stdout);
         int dupResult = dup2(targetFD, 1);
         if (dupResult == -1) { 
-            sprintf(errMsg, "dup2(): %s", targetFD);
+            sprintf(errMsg, "dup2(): %d", targetFD);
             perror(errMsg); 
             return;
         }
@@ -181,15 +200,15 @@ void processHandler(struct command* command, int* childStatus, int* mode) {
             perror(errMsg); 
             return;
         }
-        // printf("targetFD == %d\n", targetFD); fflush(stdout);
         int dupResult = dup2(targetFD, 0);
         if (dupResult == -1) {
-            sprintf(errMsg, "dup2(): %s", targetFD);
+            sprintf(errMsg, "dup2(): %d", targetFD);
             perror(errMsg);
             return;
         }
     }
     
+    // IO now configured. Call fork() and handle child/parent
     pid_t spawnPid = fork();
 
     switch(spawnPid) {
@@ -198,8 +217,8 @@ void processHandler(struct command* command, int* childStatus, int* mode) {
                 break;
         case 0:
                 // In the child process
-                if(command->runBackground == 1) { // if bg ps
-                    struct sigaction SIGINT_action = {0};
+                if(command->runBackground == 1) { // if bg ps, ignore SIGINT
+                    struct sigaction SIGINT_action = {{0}};
                     SIGINT_action.sa_handler = SIG_IGN;
                     sigfillset(&SIGINT_action.sa_mask);
                     SIGINT_action.sa_flags = 0;
@@ -217,12 +236,10 @@ void processHandler(struct command* command, int* childStatus, int* mode) {
 
                 // Depending if & is given and/or foreground-only mode is enabled, wait
                 if(*mode == 1 || command->runBackground == 0) { // foreground-only mode OR & is not given
-                    // printf("FOREGROUND\n"); fflush(stdout);
-                    fgPid = spawnPid;
+                    fgPid = spawnPid;                       // update fg process
                     spawnPid = waitpid(spawnPid, childStatus, 0);
-                } else if(command->runBackground == 1) { // if & is given
-                    // printf("BACKGROUND\n"); fflush(stdout);
-                    bgProcesses[bgCount] = spawnPid;
+                } else if(command->runBackground == 1) {    // if & is given
+                    bgProcesses[bgCount] = spawnPid;        // update bg processes
                     bgCount++;
                     printf("background pid is %d\n", spawnPid); fflush(stdout);
                     spawnPid = waitpid(spawnPid, childStatus, WNOHANG);
@@ -232,11 +249,16 @@ void processHandler(struct command* command, int* childStatus, int* mode) {
 }
 
 void checkBackgroundProcesses() {
+    // // //
+    // Checks bgProcesses[] and bgCount global variables and scans through them
+    // calling waitpid with the WNOHANG flag to see if they ended. 
+    // If they have, print out a status message before
+    // the next prompt is displayed.
+    // // //
     pid_t checkPid;
     pid_t checkStatus;
-
     for(int i = 0; i < bgCount; i++) {
-        if(checkPid = waitpid(bgProcesses[i], &checkStatus, WNOHANG) > 0) {
+        if((checkPid = waitpid(bgProcesses[i], &checkStatus, WNOHANG)) > 0) {
             printf("background pid %d is done: ", bgProcesses[i]); fflush(stdout);
             sh_status(checkStatus);
             printf("\n"); fflush(stdout);
@@ -245,10 +267,16 @@ void checkBackgroundProcesses() {
 }
 
 void checkForegroundProcess() {
+    // // //
+    // Checks fgPid global variable and calls waitpid if a foreground process
+    // was executed. Prints a status message if and only if the foreground
+    // process was interrupted by SIGINT. Otherwise, if the foreground process
+    // ends normally, the waitpid within the processHandler will catch.
+    // // //
     pid_t checkPid;
     pid_t checkStatus;
     if(fgPid) {
-        if(checkPid = waitpid(fgPid, &checkStatus, 0) > 0) {
+        if((checkPid = waitpid(fgPid, &checkStatus, 0)) > 0) {
         sh_status(checkStatus);
         printf("\n"); fflush(stdout);
         fgPid = 0;
@@ -256,12 +284,32 @@ void checkForegroundProcess() {
     }
 }
 
+// Execution pseudo-code
+    // Configure signal handlers
+
+    // initialize user input, data struct for command, and status variable.
+
+    // while loop forever until built-in exit is called.
+    //     check for any processes completed
+    //         display status messages if needed
+
+    //     display prompt
+    //     get user input, parse, and create command struct
+
+    //     check if user input is blank or a comment
+    //         do nothing
+    //     check if user input is built-in command
+    //         call built-in command
+    //     otherwise,
+    //         call the process handler to fork and pass command to executed
+
+    //      repeat
+
 int main() {
     
     // Set SIGINT handler for the shell to ignore ctrl+C
     configure_SIGINT();
     configure_SIGTSTP();
-    // configure_SIGCHLD();
 
 	// allocate memory to store command. Command line must
 	// support max length of 2048. Thus 2049 bytes given. (+1 for \0)
@@ -270,44 +318,30 @@ int main() {
 
     int childStatus = 0;
 
-    int promptPresent = 0;
-
-    // char buf[256];
-
 	while(1) { // run until exit command
 
         checkBackgroundProcesses();
         checkForegroundProcess();
         userCommand = strcpy(userCommand, "");
 
-        printf(": "); fflush(stdout);                        // prompt
-        promptPresent = 1;
-		// printf("%s: ", getcwd(buf, 256)); fflush(stdout); // prompt w/ cwd
+        printf(": "); fflush(stdout);                   // prompt
 		fgets(userCommand, sizeof(char) * 2049, stdin);	// get user input
 		userCommand[strcspn(userCommand, "\n")] = 0;	// strip fgets' trailing \n
-        
         replacePid(userCommand);
-        
 		command = parseCommandLine(userCommand);        // parse user input
-
-        // printCommandLine(command);
 
 		if(userCommand[0] == '#' || userCommand[0] == '\n' || command->command == NULL) { // if command is blank or a comment
 			// do nothing
 		} else if(strcmp(command->command, "exit") == 0) {
-            promptPresent = 0;
             free(userCommand);
             freeCommand(command);
             sh_exit(fgPid, bgProcesses, bgCount);
 		} else if(strcmp(command->command, "cd") == 0) {
-            promptPresent = 0;
             sh_cd(command);
 		} else if(strcmp(command->command, "status") == 0) {
-            promptPresent = 0;
             sh_status(childStatus);
             printf("\n"); fflush(stdout);
 		} else {
-            promptPresent = 0;
             processHandler(command, &childStatus, &mode);
         }
         freeCommand(command);

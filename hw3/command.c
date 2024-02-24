@@ -6,6 +6,23 @@
 
 
 struct command* parseCommandLine(char* userCommand) {
+    // // //
+    // Given the user input, allocates a command struct, and parses user input to fill
+    // data within the struct.
+
+    // Using a struct to store the data within a user input allows easy getting and 
+    // understanding of what data we are accessing. Prevents the need to store
+    // many different variables, and puts them all in one package.
+
+    // Uses strtok_r to parse through the user input. Heavily referenced from previous 2
+    // projects. 
+
+    // Parameters:
+    //     userCommand: string representing user input
+
+    // Return:
+    //     pointer to the newly allocated command
+    // // //
 	struct command *currCommand = malloc(sizeof(struct command));
     
     // Initalize currCommand
@@ -19,11 +36,11 @@ struct command* parseCommandLine(char* userCommand) {
     currCommand->runBackground = 0;
 
     // Tokenize words separated by " " in command 
-    char* tokens[520];
+    char* tokens[520]; // Since we need to handle 512 arguments, 520 spaces for tokens is given
     char *token;        
     char* saveptr;
     int tokenCount = 0;
-    while(token = strtok_r(userCommand, " ", &saveptr)) {
+    while((token = strtok_r(userCommand, " ", &saveptr))) {
         tokens[tokenCount] = calloc(strlen(token) + 1, sizeof(char));
         strcpy(tokens[tokenCount], token);
         tokenCount++;
@@ -60,6 +77,7 @@ struct command* parseCommandLine(char* userCommand) {
     return currCommand;
 }
 
+// Debug print function that displays all data within a command struct. Used only during dev cycle.
 void printCommandLine(struct command* aCommand) {
     printf("Command: %s\n", aCommand->command); fflush(stdout);
     printf("Argument count: %d\n", aCommand->argc); fflush(stdout);
@@ -72,6 +90,7 @@ void printCommandLine(struct command* aCommand) {
     printf("Background process? %s\n", aCommand->runBackground ? "True" : "False"); fflush(stdout);
 }
 
+// Free command function that frees all allocated memory within a command struct.
 void freeCommand(struct command* aCommand) {
     free(aCommand->command);
     for(int i = 0; i < aCommand->argc; i++) {
