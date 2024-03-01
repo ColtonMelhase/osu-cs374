@@ -11,7 +11,7 @@
 // reaches 10 is up to the student.
 
 // My implementation will make each thread take turns in incrementing myCount. The producer will
-// start off, incrementing myCount. It will then signal the consumer that it is now its turn to
+// start off, incrementing myCount. It will then signal the consumer that it is now the consumer's turn to
 // increment, then the consumer will increment and signal to the producer to increment. This will
 // repeat until myCount == 10, and the program will end.
 
@@ -35,5 +35,12 @@ void* consumer(void *args) {
 }
 
 int main() {
-    
+    // Set up program
+    printf("PROGRAM START\n"); fflush(stdout);
+
+    // main() is already thread 1
+    // Create thread 2
+    pthread_t con_tid;
+    pthread_create(&con_tid, NULL, consumer, NULL);
+    printf("CONSUMER THREAD CREATED\n"); fflush(stdout);
 }
