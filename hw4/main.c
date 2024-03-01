@@ -21,7 +21,7 @@
 #include <unistd.h>
 
 // Global var to store the count
-int myCount = 0
+int myCount = 0;
 
 // Initialize the mutex
 pthread_mutex_t myMutex = PTHREAD_MUTEX_INITIALIZER;
@@ -43,4 +43,6 @@ int main() {
     pthread_t con_tid;
     pthread_create(&con_tid, NULL, consumer, NULL);
     printf("CONSUMER THREAD CREATED\n"); fflush(stdout);
+
+
 }
