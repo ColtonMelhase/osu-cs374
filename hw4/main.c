@@ -15,6 +15,21 @@
 // increment, then the consumer will increment and signal to the producer to increment. This will
 // repeat until myCount == 10, and the program will end.
 
+#include <stdio.h>
+#include <stdlib.h>
+#include <pthread.h>
+#include <unistd.h>
+
+// Global var to store the count
+int myCount = 0
+
+// Initialize the mutex
+pthread_mutex_t myMutex = PTHREAD_MUTEX_INITIALIZER;
+
+// Initialize the condition variables
+pthread_cond_t prodsTurn = PTHREAD_COND_INITIALIZER;
+pthread_cond_t consTurn = PTHREAD_COND_INITIALIZER;
+
 void* consumer(void *args) {
 
 }
