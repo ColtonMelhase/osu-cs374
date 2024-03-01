@@ -1,7 +1,15 @@
 // Colton Melhase
 // melhasec
-// CS374 W2024p
+// CS374 W2024
 // Project 3 - Small Shell
+
+// TODO
+// Put input/output redirection after fork, so unneccessary redirection of parent shell is removed.
+// Put input/output redirection into separate functions.
+// Refactor replacePid with sprintf.
+// Put signal handlers within separate files.
+// Dynamically manage background processes. Map? Linked list?
+
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -241,6 +249,13 @@ void processHandler(struct command* command, int* childStatus, int* mode) {
                 } else if(command->runBackground == 1) {    // if & is given
                     bgProcesses[bgCount] = spawnPid;        // update bg processes
                     bgCount++;
+                    // printf("\nBG processes: [ "); fflush(stdout);
+                    // for(int i = 0; i < bgCount; i++) {
+                    //     printf("%d, ", bgProcesses[i]); fflush(stdout);
+                    // }
+                    // printf("]\n"); fflush(stdout);
+
+
                     printf("background pid is %d\n", spawnPid); fflush(stdout);
                     spawnPid = waitpid(spawnPid, childStatus, WNOHANG);
                 }
