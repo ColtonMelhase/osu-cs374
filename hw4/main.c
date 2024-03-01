@@ -11,7 +11,7 @@
 // reaches 10 is up to the student.
 
 // My implementation will make each thread take turns in incrementing myCount. The producer will
-// start off, incrementing myCount. It will then signal the consumer that it is now the consumer's turn to
+// start off incrementing myCount. It will then signal the consumer that it is now the consumer's turn to
 // increment, then the consumer will increment and signal to the producer to increment. This will
 // repeat until myCount == 10, and the program will end.
 
