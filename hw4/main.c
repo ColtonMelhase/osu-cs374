@@ -51,7 +51,7 @@ void* consumer(void *args) {
         myCount++; // increment counter
         value = myCount; // update scoped value to check myCount in top while()
         toggleCounter = 1; // toggle who increments
-        printf("CONSUMER: myCount: %d -> %d\n", myCount - 1, myCount); fflush(stdout);
+        printf("myCount: %d -> %d\n", myCount - 1, myCount); fflush(stdout);
 
         pthread_mutex_unlock(&myMutex); // Relieve the mutex
         printf("CONSUMER: myMutex unlocked\n"); fflush(stdout);
@@ -85,7 +85,7 @@ int main() {
         myCount++; // increment counter
         value = myCount; // update scoped value to check myCount in top while()
         toggleCounter = 0; // toggle who increments
-        printf("PRODUCER: myCount: %d -> %d\n", myCount - 1, myCount); fflush(stdout);
+        printf("myCount: %d -> %d\n", myCount - 1, myCount); fflush(stdout);
 
         pthread_mutex_unlock(&myMutex); // Relieve the mutex
         printf("PRODUCER: myMutex unlocked\n"); fflush(stdout);
